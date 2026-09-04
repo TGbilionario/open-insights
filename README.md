@@ -1,20 +1,21 @@
-# Open Insights
+# Política em X Minutos
 
-oi
+Produto digital de informação política criado para transformar os principais acontecimentos da política presidencial brasileira em vídeos curtos, objetivos e fáceis de consumir.
 
-This project was built with [Lovable](https://lovable.dev).
+A experiência é centrada em vídeo vertical, com progresso diário, conteúdos salvos, busca, categorias, fontes e transparência editorial.
 
-## Build with Lovable
+Este projeto foi construído com Lovable e permanece sincronizado com o GitHub.
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/057d7957-3c10-4e6b-8091-7dd6ebce3628).
+## Desenvolvimento
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+O fluxo principal do projeto é:
 
-## Development
+1. alterações no repositório GitHub;
+2. commit na branch `main`;
+3. sincronização com o Lovable;
+4. acompanhamento e teste pelo preview.
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Para desenvolvimento local:
 
 ```sh
 git clone <this-repository-url>

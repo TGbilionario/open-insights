@@ -162,7 +162,7 @@ function Home({progress,watched,open,query,results,setCategory}:{progress:number
     </section>
 
     <section className="pxm-section">
-      <div className="pxm-section-head"><div><span>CURADORIA EDITORIAL</span><h2>{query ? "Resultados para ""+query+""" : "Principais notícias de hoje"}</h2></div><button className="pxm-text-btn" onClick={()=>open(1)}>Ver todos <ChevronRight size={15}/></button></div>
+      <div className="pxm-section-head"><div><span>CURADORIA EDITORIAL</span><h2>{query ? `Resultados para "${query}"` : "Principais notícias de hoje"}</h2></div><button className="pxm-text-btn" onClick={()=>open(1)}>Ver todos <ChevronRight size={15}/></button></div>
       {results.length ? <div className="pxm-grid">{results.slice(0,6).map(v=><NewsCard key={v.id} video={v} watched={watched.includes(v.id)} open={()=>open(v.id)}/>)}</div> : <Empty title="Nada encontrado" text="Tente outro nome, tema ou acontecimento."/>}
     </section>
 

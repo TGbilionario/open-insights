@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowLeft, ArrowRight, Bookmark, Check, ChevronRight, CirclePlay, Clock3,
-  ExternalLink, Filter, Flame, History, Home, LayoutDashboard, Menu, Pause,
+  ExternalLink, Filter, Flame, History, Home as HomeIcon, LayoutDashboard, Menu, Pause,
   Play, Search, Settings, Share2, Sparkles, User, Volume2, VolumeX, X
 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
@@ -129,7 +129,7 @@ function Index() {
 
 function Nav({page,go}:{page:Page;go:(p:Page)=>void}) {
   const items:[Page,ReactNode,string][] = [
-    ["home",<Home size={18}/>,"Início"],["videos",<CirclePlay size={18}/>,"Vídeos"],
+    ["home",<HomeIcon size={18}/>,"Início"],["videos",<CirclePlay size={18}/>,"Vídeos"],
     ["summary",<Flame size={18}/>,"Resumo do dia"],["saved",<Bookmark size={18}/>,"Salvos"],["profile",<User size={18}/>,"Meu perfil"]
   ];
   return <nav className="pxm-nav">{items.map(([p,icon,label])=><button key={p} className={"pxm-nav-item "+(page===p?"active":"")} onClick={()=>go(p)}>{icon}{label}</button>)}</nav>;

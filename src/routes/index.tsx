@@ -63,7 +63,7 @@ function Index() {
     return categoryMatch && queryMatch;
   }), [category,query]);
 
-  const current = videos.find(v => v.id === selected) || videos[0];
+  const current = videos.find(v => v.id === selected) ?? videos[0]!;
   const progress = Math.round((watched.length / videos.length) * 100);
 
   const persistWatched = (next:number[]) => {
@@ -82,7 +82,7 @@ function Index() {
   const toggleSave = (id:number) => persistSaved(saved.includes(id) ? saved.filter(x => x !== id) : [...saved,id]);
   const move = (delta:number) => {
     const i = videos.findIndex(v => v.id === selected);
-    const next = videos[(i + delta + videos.length) % videos.length];
+    const next = videos[(i + delta + videos.length) % videos.length]!;
     openVideo(next.id);
   };
 

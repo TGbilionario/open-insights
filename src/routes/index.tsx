@@ -55,6 +55,10 @@ function Index() {
   const [watched,setWatched] = useState<number[]>(() => storage("pxm-watched", []));
   const [saved,setSaved] = useState<number[]>(() => storage("pxm-saved", []));
   const [menu,setMenu] = useState(false);
+  const [followedTopics,setFollowedTopics] = useState<string[]>(() => storage("pxm-followed-topics", ["ELEIÇÕES"]));
+  const [topicNotice,setTopicNotice] = useState(false);
+  const persistTopics = (next:string[]) => { setFollowedTopics(next); if (typeof window !== "undefined") localStorage.setItem("pxm-followed-topics", JSON.stringify(next)); };
+  const toggleTopic = (topic:string) => { const next = followedTopics.includes(topic) ? followedTopics.filter(x => x !== topic) : [...followedTopics, topic]; persistTopics(next); setTopicNotice(true); setTimeout(() => setTopicNotice(false), 1800); };
 
   const filtered = useMemo(() => videos.filter(v => {
     const q = query.trim().toLowerCase();
@@ -115,7 +119,7 @@ function Index() {
         </aside>
 
         <main className="pxm-main">
-          {page==="home" && <Home progress={progress} watched={watched} open={openVideo} query={query} results={filtered} setCategory={setCategory}/>}
+          {page==="home" && <Home progress={progress} watched={watched} open={openVideo} query={query} results={filtered} setCategory={setCategory} followedTopics={followedTopics} toggleTopic={toggleTopic} topicNotice={topicNotice}/>}
           {page==="videos" && <Player video={current} watched={watched.includes(current.id)} saved={saved.includes(current.id)} save={()=>toggleSave(current.id)} mark={()=>watched.includes(current.id)?undefined:persistWatched([...watched,current.id])} back={()=>setPage("home")} next={()=>move(1)} prev={()=>move(-1)}/>}
           {page==="summary" && <Summary watched={watched}/>}
           {page==="saved" && <Saved ids={saved} open={openVideo}/>}
@@ -135,7 +139,7 @@ function Nav({page,go}:{page:Page;go:(p:Page)=>void}) {
   return <nav className="pxm-nav">{items.map(([p,icon,label])=><button key={p} className={"pxm-nav-item "+(page===p?"active":"")} onClick={()=>go(p)}>{icon}{label}</button>)}</nav>;
 }
 
-function Home({progress,watched,open,query,results,setCategory}:{progress:number;watched:number[];open:(id:number)=>void;query:string;results:VideoItem[];setCategory:(c:Category)=>void}) {
+function Home({progress,watched,open,query,results,setCategory,followedTopics,toggleTopic,topicNotice}:{progress:number;watched:number[];open:(id:number)=>void;query:string;results:VideoItem[];setCategory:(c:Category)=>void;followedTopics:string[];toggleTopic:(c:string)=>void;topicNotice:boolean}) {
   const remaining = videos.length - watched.length;
   return <div className="pxm-home">
     <section className="pxm-hero">
@@ -164,6 +168,13 @@ function Home({progress,watched,open,query,results,setCategory}:{progress:number
     <section className="pxm-section">
       <div className="pxm-section-head"><div><span>CURADORIA EDITORIAL</span><h2>{query ? `Resultados para "${query}"` : "Principais notícias de hoje"}</h2></div><button className="pxm-text-btn" onClick={()=>open(1)}>Ver todos <ChevronRight size={15}/></button></div>
       {results.length ? <div className="pxm-grid">{results.slice(0,6).map(v=><NewsCard key={v.id} video={v} watched={watched.includes(v.id)} open={()=>open(v.id)}/>)}</div> : <Empty title="Nada encontrado" text="Tente outro nome, tema ou acontecimento."/>}
+    </section>
+
+    <section className="pxm-section pxm-follow-section">
+      <div className="pxm-section-head"><div><span>ACOMPANHE UM TEMA</span><h2>Receba novidades sobre o que importa para você</h2></div><span className="pxm-follow-count">{followedTopics.length} tema{followedTopics.length===1?"":"s"} acompanhado{followedTopics.length===1?"":"s"}</span></div>
+      <p className="pxm-follow-intro">Escolha temas para acompanhar. Quando novos conteúdos sobre eles forem publicados no produto, eles aparecem destacados para você.</p>
+      <div className="pxm-topic-pills">{categories.slice(1).map(c=><button key={c} className={followedTopics.includes(c)?"selected":""} onClick={()=>toggleTopic(c)}>{followedTopics.includes(c)&&<Check size={14}/>} {c}</button>)}</div>
+      {topicNotice&&<div className="pxm-follow-toast"><Check size={15}/> Preferência salva neste dispositivo.</div>}
     </section>
 
     <section className="pxm-section">

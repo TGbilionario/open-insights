@@ -4,7 +4,7 @@ import {
   ExternalLink, Filter, Flame, History, Home as HomeIcon, LayoutDashboard, Menu, Pause,
   Play, Search, Settings, Share2, Sparkles, User, Volume2, VolumeX, X
 } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { DailyHighlight } from "@/components/DailyHighlight";
 import { WeeklyHighlight } from "@/components/WeeklyHighlight";
 import { AiAnalysisPage } from "@/components/AiAnalysisPage";
@@ -132,7 +132,9 @@ function Index() {
         <main className="pxm-main">
           {page==="home" && <Home progress={progress} watched={watched} open={openVideo} query={query} results={filtered} setCategory={setCategory} followedTopics={followedTopics} toggleTopic={toggleTopic} topicNotice={topicNotice}/>}
           {page==="videos" && <Player video={current} watched={watched.includes(current.id)} saved={saved.includes(current.id)} save={()=>toggleSave(current.id)} mark={()=>watched.includes(current.id)?undefined:persistWatched([...watched,current.id])} back={()=>setPage("home")} next={()=>move(1)} prev={()=>move(-1)}/>}
-          {page==="summary" && <Summary watched={watched}/>}\n          {page==="dailyHighlight" && <DailyHighlightPage open={openVideo}/>}
+          {page==="summary" && <Summary watched={watched}/>}
+          {page==="aiAnalysis" && <AiAnalysisPage/>}
+          {page==="dailyHighlight" && <DailyHighlightPage open={openVideo}/>}
           {page==="saved" && <Saved ids={saved} open={openVideo}/>}
           {page==="profile" && <Profile watched={watched} saved={saved} clear={()=>{persistWatched([]);persistSaved([])}}/>}
           {page==="admin" && <Admin/>}
@@ -324,10 +326,44 @@ function Profile({watched,saved,clear}:{watched:number[];saved:number[];clear:()
 }
 
 function Admin() {
+  const [aiStats,setAiStats]=useState<null | {
+    dailyCommunityAllocation:number; communityRemaining:number; resetAt:string|null;
+    analysesToday:number; averageCreditsPerAnalysis:number; personalCreditsIssued:number;
+    personalCreditsConsumed:number; providerConfigured:boolean; provider:string; model:string;
+  }>(null);
+  useEffect(() => {
+    let active=true;
+    import("@/lib/ai-analysis.functions").then(({getAiAdminStats}) =>
+      getAiAdminStats().then((data) => { if(active) setAiStats(data as typeof aiStats); }).catch(() => undefined)
+    );
+    return () => { active=false; };
+  }, []);
   const [notice,setNotice]=useState("");
   const publish=()=>{setNotice("Rascunho criado localmente. Conecte seu banco/API para publicar para todos os usuários.");setTimeout(()=>setNotice(""),3500)};
   return <div className="pxm-page"><PageHeader eyebrow="ÁREA PROTEGIDA" title="Administração" text="Central de gestão editorial e acompanhamento do produto."/>
     <div className="pxm-admin-stats">{[["08","Vídeos publicados"],["01.284","Visualizações"],["72%","Conclusão média"],["04:32","Tempo médio"]].map(([n,l])=><div className="pxm-admin-stat" key={l}><strong>{n}</strong><span>{l}</span></div>)}</div>
+    {aiStats && <section className="pxm-admin-card" style={{marginBottom:16}}>
+      <div className="pxm-card-head"><div><span>IA / CRÉDITOS</span><h2>ANÁLISE E SUPOSIÇÃO DA IA</h2></div>
+        <span className="pxm-label">{aiStats.providerConfigured ? `API · ${aiStats.provider}` : "MODO DEMONSTRAÇÃO"}</span>
+      </div>
+      <div className="pxm-admin-stats">
+        {[[
+          aiStats.communityRemaining.toLocaleString("pt-BR"),
+          "Créditos comunitários restantes"
+        ],[
+          aiStats.dailyCommunityAllocation.toLocaleString("pt-BR"),
+          "Cota comunitária diária"
+        ],[
+          String(aiStats.analysesToday),
+          "Análises concluídas"
+        ],[
+          String(aiStats.averageCreditsPerAnalysis),
+          "Média de créditos/análise"
+        ]].map(([n,l])=><div className="pxm-admin-stat" key={l}><strong>{n}</strong><span>{l}</span></div>)}
+      </div>
+      <p style={{marginTop:12}}>Créditos pessoais emitidos: <b>{aiStats.personalCreditsIssued.toLocaleString("pt-BR")}</b> · consumidos: <b>{aiStats.personalCreditsConsumed.toLocaleString("pt-BR")}</b>.</p>
+      <p style={{marginTop:6}}>Modelo: <b>{aiStats.model}</b> · renovação: <b>{aiStats.resetAt ? new Date(aiStats.resetAt).toLocaleString("pt-BR") : "—"}</b>.</p>
+    </section>}
     <div className="pxm-admin-layout"><section className="pxm-admin-card"><div className="pxm-card-head"><div><span>CONTEÚDO</span><h2>Publicar novo vídeo</h2></div><button className="pxm-primary" onClick={publish}><Sparkles size={15}/> Criar conteúdo</button></div><div className="pxm-form-grid"><label>Manchete<input placeholder="Título do vídeo"/></label><label>Categoria<select defaultValue="PRESIDENTE">{categories.map(c=><option key={c}>{c}</option>)}</select></label><label className="wide">Resumo<textarea placeholder="Explique em poucas linhas o que o usuário precisa saber."/></label><label>Tipo<select defaultValue="FATO"><option>FATO</option><option>CONTEXTO</option><option>ANÁLISE</option><option>PROJEÇÃO</option></select></label><label>URL do vídeo<input placeholder="https://..."/></label><label className="wide">Fonte original<input placeholder="https://fonte-original.com/materia"/></label></div>{notice&&<div className="pxm-toast"><Check size={16}/>{notice}</div>}</section>
       <section className="pxm-admin-card"><div className="pxm-card-head"><div><span>DESEMPENHO</span><h2>Conteúdos mais assistidos</h2></div></div><div className="pxm-ranking">{videos.slice(0,5).map((v,i)=><div key={v.id}><b>{String(i+1).padStart(2,"0")}</b><span>{v.title}</span><strong>{[284,219,187,164,132][i]}</strong></div>)}</div></section>
     </div>

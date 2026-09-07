@@ -22,7 +22,7 @@ type Category =
   | "PRINCIPAIS DO DIA" | "PRESIDENTE" | "PESQUISAS" | "ELEIÇÕES" | "CONGRESSO"
   | "STF/TSE" | "CANDIDATOS" | "PARTIDOS" | "ECONOMIA E POLÍTICA" | "POLÊMICAS" | "BASTIDORES";
 type StoryType = "FATO" | "ANÁLISE" | "CONTEXTO" | "PROJEÇÃO";
-type Page = "home" | "videos" | "summary" | "saved" | "profile" | "admin";
+type Page = "home" | "videos" | "summary" | "dailyHighlight" | "saved" | "profile" | "admin";
 
 type VideoItem = {
   id: number;
@@ -131,7 +131,7 @@ function Index() {
         <main className="pxm-main">
           {page==="home" && <Home progress={progress} watched={watched} open={openVideo} query={query} results={filtered} setCategory={setCategory} followedTopics={followedTopics} toggleTopic={toggleTopic} topicNotice={topicNotice}/>}
           {page==="videos" && <Player video={current} watched={watched.includes(current.id)} saved={saved.includes(current.id)} save={()=>toggleSave(current.id)} mark={()=>watched.includes(current.id)?undefined:persistWatched([...watched,current.id])} back={()=>setPage("home")} next={()=>move(1)} prev={()=>move(-1)}/>}
-          {page==="summary" && <Summary watched={watched}/>}
+          {page==="summary" && <Summary watched={watched}/>}\n          {page==="dailyHighlight" && <DailyHighlightPage open={openVideo}/>}
           {page==="saved" && <Saved ids={saved} open={openVideo}/>}
           {page==="profile" && <Profile watched={watched} saved={saved} clear={()=>{persistWatched([]);persistSaved([])}}/>}
           {page==="admin" && <Admin/>}
@@ -144,7 +144,7 @@ function Index() {
 function Nav({page,go}:{page:Page;go:(p:Page)=>void}) {
   const items:[Page,ReactNode,string][] = [
     ["home",<HomeIcon size={18}/>,"Início"],["videos",<CirclePlay size={18}/>,"Vídeos"],
-    ["summary",<Flame size={18}/>,"Resumo do dia"],["saved",<Bookmark size={18}/>,"Salvos"],["profile",<User size={18}/>,"Meu perfil"]
+    ["summary",<Flame size={18}/>,"Resumo do dia"],["dailyHighlight",<Sparkles size={18}/>,"Destaque do dia"],["saved",<Bookmark size={18}/>,"Salvos"],["profile",<User size={18}/>,"Meu perfil"]
   ];
   return <nav className="pxm-nav">{items.map(([p,icon,label])=><button key={p} className={"pxm-nav-item "+(page===p?"active":"")} onClick={()=>go(p)}>{icon}{label}</button>)}</nav>;
 }
@@ -255,11 +255,53 @@ function Player({video,watched,saved,save,mark,back,next,prev}:{video:VideoItem;
   </div>;
 }
 
+const editionDays = [
+  { date: "07/09/2026", label: "Hoje", status: "em atualização" },
+  { date: "06/09/2026", label: "Ontem", status: "fechado" },
+  { date: "05/09/2026", label: "05/09/2026", status: "fechado" },
+  { date: "04/09/2026", label: "04/09/2026", status: "fechado" },
+];
+
+function DaySelector({selected,onSelect}:{selected:string;onSelect:(date:string)=>void}) {
+  return <div className="pxm-day-selector" aria-label="Escolher edição">
+    {editionDays.map(day=><button key={day.date} className={selected===day.date?"selected":""} onClick={()=>onSelect(day.date)}>
+      <span>{day.label}</span><small>{day.status}</small>
+    </button>)}
+  </div>;
+}
+
+function DailyHighlightPage({open}:{open:(id:number)=>void}) {
+  const now = new Date();
+  const [selectedDay,setSelectedDay] = useState(() => {
+    const d = new Date(now); d.setDate(d.getDate()-1);
+    return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric"});
+  });
+  const available = editionDays.some(d=>d.date===selectedDay);
+  const highlight = videos.find(v=>v.featured) ?? videos[0]!;
+  return <div className="pxm-page">
+    <PageHeader eyebrow="EDIÇÃO ESPECIAL" title="Destaque do dia" text="A notícia que mais repercutiu em cada dia, selecionada após o fechamento editorial."/>
+    <DaySelector selected={selectedDay} onSelect={setSelectedDay}/>
+    {available ? <DailyHighlight dateLabel={selectedDay} title={highlight.title} summary={highlight.summary} duration={highlight.duration} onOpen={()=>open(highlight.id)}/> :
+      <Empty title="Edição ainda não disponível" text="Escolha um dia que já tenha passado e tenha fechamento editorial."/>}
+    <section className="pxm-daily-history">
+      <div className="pxm-section-head"><div><span>HISTÓRICO</span><h2>Todos os destaques disponíveis</h2></div></div>
+      <div className="pxm-history-list">{editionDays.filter(d=>d.status==="fechado").map(day=><button key={day.date} onClick={()=>setSelectedDay(day.date)}><span>{day.date}</span><b>Ver destaque</b><ChevronRight size={15}/></button>)}</div>
+    </section>
+  </div>;
+}
+
 function Summary({watched}:{watched:number[]}) {
-  return <div className="pxm-page"><PageHeader eyebrow="EDIÇÃO DIÁRIA" title="Resumo do dia" text="Uma visão rápida dos acontecimentos que dominaram a política presidencial."/>
-    <div className="pxm-summary-grid"><div className="pxm-summary-main"><span className="pxm-label">O QUE IMPORTA</span><h2>8 acontecimentos para você começar o dia informado.</h2><p>Use esta página como uma leitura rápida antes ou depois de assistir aos vídeos. O vídeo continua sendo a experiência principal.</p></div><div className="pxm-stat"><strong>{watched.length}</strong><span>vídeos vistos</span></div><div className="pxm-stat"><strong>{videos.length-watched.length}</strong><span>ainda pendentes</span></div></div>
-    <div className="pxm-summary-list">{videos.map((v,i)=><div key={v.id}><span>{String(i+1).padStart(2,"0")}</span><div><b>{v.title}</b><small>{v.category} · {v.type}</small></div><button onClick={()=>undefined}><ChevronRight size={17}/></button></div>)}</div>
-    <div className="pxm-note"><Sparkles size={18}/><div><b>Transparência editorial</b><p>Fatos, contexto, análise e projeções devem ser identificados separadamente. As fontes originais ficam disponíveis dentro de cada conteúdo.</p></div></div>
+  const [selectedDay,setSelectedDay] = useState(() => {
+    const d = new Date(); d.setDate(d.getDate()-1);
+    return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric"});
+  });
+  const isToday = selectedDay === "07/09/2026";
+  return <div className="pxm-page">
+    <PageHeader eyebrow="EDIÇÃO DIÁRIA" title="Resumo do dia" text="Acompanhe as notícias conforme elas saem e consulte qualquer edição já encerrada."/>
+    <DaySelector selected={selectedDay} onSelect={setSelectedDay}/>
+    <div className="pxm-summary-grid"><div className="pxm-summary-main"><span className="pxm-label">{isToday?"ATUALIZAÇÃO EM TEMPO REAL":"EDIÇÃO ENCERRADA"}</span><h2>{isToday?"Notícias do dia, na ordem em que aconteceram.":"Resumo completo de "+selectedDay+"."}</h2><p>{isToday?"A edição recebe novas notícias ao longo do dia. Cada item mantém o horário em que foi publicado para você acompanhar a sequência dos acontecimentos.":"Esta edição foi fechada após o ciclo de notícias do dia. O histórico permanece disponível para consulta."}</p></div><div className="pxm-stat"><strong>{videos.length}</strong><span>notícias na edição</span></div><div className="pxm-stat"><strong>{watched.length}</strong><span>vídeos vistos neste dispositivo</span></div></div>
+    <div className="pxm-summary-list">{videos.map((v,i)=><div key={v.id}><span>{v.time}</span><div><b>{v.title}</b><small>{v.category} · {v.type} · publicado às {v.time}</small></div><button onClick={()=>undefined} aria-label={"Abrir "+v.title}><ChevronRight size={17}/></button></div>)}</div>
+    <div className="pxm-note"><Sparkles size={18}/><div><b>Histórico editorial</b><p>O resumo de cada dia fica arquivado depois do fechamento. A edição atual continua recebendo novos itens enquanto o dia estiver aberto.</p></div></div>
   </div>;
 }
 

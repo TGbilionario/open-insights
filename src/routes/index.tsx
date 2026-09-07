@@ -7,6 +7,7 @@ import {
 import { useMemo, useState, type ReactNode } from "react";
 import { DailyHighlight } from "@/components/DailyHighlight";
 import { WeeklyHighlight } from "@/components/WeeklyHighlight";
+import { AiAnalysisPage } from "@/components/AiAnalysisPage";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -22,7 +23,7 @@ type Category =
   | "PRINCIPAIS DO DIA" | "PRESIDENTE" | "PESQUISAS" | "ELEIÇÕES" | "CONGRESSO"
   | "STF/TSE" | "CANDIDATOS" | "PARTIDOS" | "ECONOMIA E POLÍTICA" | "POLÊMICAS" | "BASTIDORES";
 type StoryType = "FATO" | "ANÁLISE" | "CONTEXTO" | "PROJEÇÃO";
-type Page = "home" | "videos" | "summary" | "dailyHighlight" | "saved" | "profile" | "admin";
+type Page = "home" | "videos" | "summary" | "dailyHighlight" | "aiAnalysis" | "saved" | "profile" | "admin";
 
 type VideoItem = {
   id: number;
@@ -144,7 +145,7 @@ function Index() {
 function Nav({page,go}:{page:Page;go:(p:Page)=>void}) {
   const items:[Page,ReactNode,string][] = [
     ["home",<HomeIcon size={18}/>,"Início"],["videos",<CirclePlay size={18}/>,"Vídeos"],
-    ["summary",<Flame size={18}/>,"Resumo do dia"],["dailyHighlight",<Sparkles size={18}/>,"Destaque do dia"],["saved",<Bookmark size={18}/>,"Salvos"],["profile",<User size={18}/>,"Meu perfil"]
+    ["summary",<Flame size={18}/>,"Resumo do dia"],["dailyHighlight",<Sparkles size={18}/>,"Destaque do dia"],["aiAnalysis",<Sparkles size={18}/>,"Análise e suposição da IA"],["saved",<Bookmark size={18}/>,"Salvos"],["profile",<User size={18}/>,"Meu perfil"]
   ];
   return <nav className="pxm-nav">{items.map(([p,icon,label])=><button key={p} className={"pxm-nav-item "+(page===p?"active":"")} onClick={()=>go(p)}>{icon}{label}</button>)}</nav>;
 }

@@ -226,8 +226,9 @@ BEGIN
     IF extra > 0 THEN
       UPDATE public.ai_credit_pool SET credits_remaining = GREATEST(credits_remaining - extra, 0), updated_at = now() WHERE id = 'global';
     END IF;
-    INSERT INTO public.ai_credit_ledger (user_key, user_id, type, amount, analysis_id, metadata)
-      VALUES (p_user_key, p_user_id, 'community_charge', -GREATEST(p_charged,0), p_analysis_id, jsonb_build_object('stage','charge'));
+    -- A reserva já foi registrada no ledger. O reembolso da diferença completa
+    -- a trilha contábil; não registrar uma segunda cobrança aqui para evitar
+    -- descontar duas vezes no ledger.
   ELSE
     IF refund > 0 THEN
       UPDATE public.user_ai_wallets SET balance = balance + refund, updated_at = now() WHERE user_key = p_user_key;
@@ -237,7 +238,10 @@ BEGIN
     IF extra > 0 THEN
       UPDATE public.user_ai_wallets SET balance = GREATEST(balance - extra, 0), updated_at = now() WHERE user_key = p_user_key;
     END IF;
-    UPDATE public.user_ai_wallets SET lifetime_consumed = lifetime_consumed + GREATEST(p_charged,0), updated_at = now() WHERE user_key = p_user_key;
+    UPDATE public.user_ai_wallets
+      SET lifetime_consumed = lifetime_consumed + GREATEST(p_charged,0),
+          updated_at = now()
+      WHERE user_key = p_user_key;
   END IF;
 
   UPDATE public.user_ai_usage SET total_analyses = total_analyses + 1, updated_at = now() WHERE user_key = p_user_key;

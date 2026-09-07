@@ -5,6 +5,7 @@ import {
   Play, Search, Settings, Share2, Sparkles, User, Volume2, VolumeX, X
 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
+import { DailyHighlight } from "@/components/DailyHighlight";
 import { WeeklyHighlight } from "@/components/WeeklyHighlight";
 
 export const Route = createFileRoute("/")({ component: Index });
@@ -173,6 +174,14 @@ function Home({progress,watched,open,query,results,setCategory,followedTopics,to
       <div className="pxm-progress"><i style={{width:progress+"%"}}/></div>
       <b>{remaining ? "Faltam "+remaining+" para você ficar por dentro de tudo." : "Você já está atualizado."}</b>
     </section>
+
+    <DailyHighlight
+      dateLabel="07/09/2026"
+      title={videos[0]!.title}
+      summary={videos[0]!.summary}
+      duration={videos[0]!.duration}
+      onOpen={()=>open(videos[0]!.id)}
+    />
 
     <WeeklyHighlight
       shorts={weeklyShorts}

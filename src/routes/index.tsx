@@ -5,8 +5,17 @@ import {
   Play, Search, Settings, Share2, Sparkles, User, Volume2, VolumeX, X
 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
+import { WeeklyHighlight } from "@/components/WeeklyHighlight";
 
 export const Route = createFileRoute("/")({ component: Index });
+
+// Mock local compatível com o componente; futuramente alimentado pelo pipeline editorial.
+const weeklyShorts = [
+  { id: 1, title: "O que aconteceu?", duration: "00:48" },
+  { id: 2, title: "Onde está o conflito?", duration: "00:55" },
+  { id: 3, title: "O que está em jogo?", duration: "00:51" },
+  { id: 4, title: "E agora?", duration: "00:44" },
+];
 
 type Category =
   | "PRINCIPAIS DO DIA" | "PRESIDENTE" | "PESQUISAS" | "ELEIÇÕES" | "CONGRESSO"
@@ -150,7 +159,7 @@ function Home({progress,watched,open,query,results,setCategory,followedTopics,to
         <p>Os acontecimentos presidenciais que realmente importam, resumidos em vídeos curtos e objetivos.</p>
         <div className="pxm-actions">
           <button className="pxm-primary" onClick={()=>open(videos.find(v=>!watched.includes(v.id))?.id || 1)}><Play size={16} fill="currentColor"/> Começar agora</button>
-          <button className="pxm-ghost" onClick={()=>open(1)}>Ver destaque <ChevronRight size={16}/></button>
+          <button className="pxm-ghost" onClick={()=>open(weeklyShorts[0]!.id)}>Ver destaque <ChevronRight size={16}/></button>
         </div>
       </div>
       <div className="pxm-hero-score">
@@ -164,6 +173,11 @@ function Home({progress,watched,open,query,results,setCategory,followedTopics,to
       <div className="pxm-progress"><i style={{width:progress+"%"}}/></div>
       <b>{remaining ? "Faltam "+remaining+" para você ficar por dentro de tudo." : "Você já está atualizado."}</b>
     </section>
+
+    <WeeklyHighlight
+      shorts={weeklyShorts}
+      onOpenShort={(id)=>open(id)}
+    />
 
     <section className="pxm-section">
       <div className="pxm-section-head"><div><span>CURADORIA EDITORIAL</span><h2>{query ? `Resultados para "${query}"` : "Principais notícias de hoje"}</h2></div><button className="pxm-text-btn" onClick={()=>open(1)}>Ver todos <ChevronRight size={15}/></button></div>

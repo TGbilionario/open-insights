@@ -151,6 +151,18 @@ function Nav({page,go}:{page:Page;go:(p:Page)=>void}) {
 
 function Home({progress,watched,open,query,results,setCategory,followedTopics,toggleTopic,topicNotice}:{progress:number;watched:number[];open:(id:number)=>void;query:string;results:VideoItem[];setCategory:(c:Category)=>void;followedTopics:string[];toggleTopic:(c:string)=>void;topicNotice:boolean}) {
   const remaining = videos.length - watched.length;
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentMinutes = currentHour * 60 + currentMinute;
+  const isSunday = now.getDay() === 0;
+  const dailyHighlightAvailable = currentMinutes >= 7 * 60;
+  const weeklyHighlightAvailable = isSunday && currentMinutes >= 20 * 60;
+  const previousDay = new Date(now);
+  previousDay.setDate(now.getDate() - 1);
+  const formatDate = (date: Date) => date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const dailyDateLabel = formatDate(previousDay);
+  const weeklyDateLabel = formatDate(now);
   return <div className="pxm-home">
     <section className="pxm-hero">
       <div className="pxm-hero-copy">
@@ -175,18 +187,19 @@ function Home({progress,watched,open,query,results,setCategory,followedTopics,to
       <b>{remaining ? "Faltam "+remaining+" para você ficar por dentro de tudo." : "Você já está atualizado."}</b>
     </section>
 
-    <DailyHighlight
-      dateLabel="07/09/2026"
+    {dailyHighlightAvailable && <DailyHighlight
+      dateLabel={dailyDateLabel}
       title={videos[0]!.title}
       summary={videos[0]!.summary}
       duration={videos[0]!.duration}
       onOpen={()=>open(videos[0]!.id)}
-    />
+    />}
 
-    <WeeklyHighlight
+    {weeklyHighlightAvailable && <WeeklyHighlight
       shorts={weeklyShorts}
+      weekLabel={`DESTAQUE DA SEMANA · ${weeklyDateLabel}`}
       onOpenShort={(id)=>open(id)}
-    />
+    />}
 
     <section className="pxm-section">
       <div className="pxm-section-head"><div><span>CURADORIA EDITORIAL</span><h2>{query ? `Resultados para "${query}"` : "Principais notícias de hoje"}</h2></div><button className="pxm-text-btn" onClick={()=>open(1)}>Ver todos <ChevronRight size={15}/></button></div>

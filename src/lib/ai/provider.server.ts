@@ -1,3 +1,5 @@
+import { collectVerificationSources, formatVerificationSources } from "./source-verification.server";
+
 import {
   CREDIT_CONFIG,
   estimateUsage,
@@ -15,6 +17,7 @@ export type AnalysisSections = {
 export type GenerateAnalysisInput = {
   question: string;
   context?: string | undefined;
+  verificationSources?: string | undefined;
 };
 
 export type GenerateAnalysisResult = {
@@ -46,7 +49,7 @@ REGRA MÁXIMA — NÃO INVENTAR DADOS
 - Se não houver dados suficientes para uma estimativa quantitativa, diga explicitamente: "Não há dados suficientes para uma estimativa percentual confiável."
 - Se uma informação política atual não puder ser confirmada pelo contexto fornecido, trate-a como "não verificada" em vez de preencher a lacuna com memória.
 - Não cite partidos, cargos ou situações atuais quando houver dúvida sobre sua vigência.
-- Não invente fontes. Só mencione fontes quando elas forem fornecidas no contexto.
+- Não invente fontes. Só mencione fontes quando elas forem fornecidas no contexto.\n- Para fatos atuais ou sujeitos a mudança (candidaturas, cargos, partidos, pesquisas, decisões, alianças e números), exija apoio nas fontes de checagem. Se não houver apoio, escreva "não verificado".\n- Antes de produzir o JSON, faça uma checagem interna de cada afirmação factual e corrija inconsistências óbvias.
 
 SEPARAÇÃO OBRIGATÓRIA
 Diferencie sempre:
@@ -97,7 +100,7 @@ function buildUserPrompt(input: GenerateAnalysisInput): string {
   const context = input.context?.trim();
   return [
     `Pergunta do usuário: ${input.question.trim()}`,
-    context ? `Contexto editorial fornecido:\n${context}` : "Contexto editorial fornecido: nenhum.",
+    context ? `Contexto editorial fornecido:\n${context}` : "Contexto editorial fornecido: nenhum.",\n    `FONTES PARA CHECAGEM:\n${input.verificationSources?.trim() || "Nenhuma fonte pública recuperada; fatos atuais devem ser marcados como não verificados."}`,
     "Produza as cinco seções pedidas.",
   ].join("\n\n");
 }
@@ -153,7 +156,7 @@ class HuggingFaceProvider implements AiAnalysisProvider {
   ) {}
 
   async generateAnalysis(input: GenerateAnalysisInput): Promise<GenerateAnalysisResult> {
-    const userPrompt = buildUserPrompt(input);
+    const sources = await collectVerificationSources(input.question);\n    const verificationSources = formatVerificationSources(sources);\n    const userPrompt = buildUserPrompt({ ...input, verificationSources });
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -184,7 +187,7 @@ class HuggingFaceProvider implements AiAnalysisProvider {
     const content = payload.choices?.[0]?.message?.content;
     if (!content) throw new Error("Hugging Face retornou uma resposta vazia.");
 
-    const analysis = parseSections(content);
+    const analysis = parseSections(content);\n    analysis.scenarioAnalysis += `\\n\\nFONTES CONSULTADAS NA CHECAGEM\\n${verificationSources}`;
     const u = payload.usage;
     const usage: TokenUsage =
       u && typeof u.prompt_tokens === "number" && typeof u.completion_tokens === "number"

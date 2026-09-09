@@ -36,12 +36,13 @@ function parseRss(xml: string): VerificationSource[] {
     const cleanSource = stripHtml(source ?? "Google News");
 
     if (cleanTitle && cleanLink.startsWith("http")) {
-      items.push({
+      const item: VerificationSource = {
         title: cleanTitle,
         source: cleanSource || "Google News",
         url: cleanLink,
-        publishedAt: published ? stripHtml(published) : undefined,
-      });
+      };
+      if (published) item.publishedAt = stripHtml(published);
+      items.push(item);
     }
   }
 

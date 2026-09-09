@@ -100,7 +100,8 @@ function buildUserPrompt(input: GenerateAnalysisInput): string {
   const context = input.context?.trim();
   return [
     `Pergunta do usuário: ${input.question.trim()}`,
-    context ? `Contexto editorial fornecido:\n${context}` : "Contexto editorial fornecido: nenhum.",\n    `FONTES PARA CHECAGEM:\n${input.verificationSources?.trim() || "Nenhuma fonte pública recuperada; fatos atuais devem ser marcados como não verificados."}`,
+    context ? `Contexto editorial fornecido:\n${context}` : "Contexto editorial fornecido: nenhum.",
+    `FONTES PARA CHECAGEM:\n${input.verificationSources?.trim() || "Nenhuma fonte pública recuperada; fatos atuais devem ser marcados como não verificados."}`,
     "Produza as cinco seções pedidas.",
   ].join("\n\n");
 }

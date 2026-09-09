@@ -33,7 +33,7 @@ export async function reserveCredits(
 ): Promise<ReserveOk | ReserveFail> {
   const { data, error } = await supabaseAdmin.rpc("ai_reserve_credits", {
     p_user_key: userKey,
-    p_user_id: userId,
+    p_user_id: userId as string,
     p_amount: amount,
     p_free_limit: CREDIT_CONFIG.freeCommunityUsesPerCycle,
   });
@@ -51,7 +51,7 @@ export async function settleCredits(args: {
 }) {
   const { error } = await supabaseAdmin.rpc("ai_settle_credits", {
     p_user_key: args.userKey,
-    p_user_id: args.userId,
+    p_user_id: args.userId as string,
     p_source: args.source,
     p_reserved: args.reserved,
     p_charged: args.charged,
@@ -70,10 +70,10 @@ export async function refundReservation(args: {
 }) {
   const { error } = await supabaseAdmin.rpc("ai_refund_reservation", {
     p_user_key: args.userKey,
-    p_user_id: args.userId,
+    p_user_id: args.userId as string,
     p_source: args.source,
     p_amount: args.amount,
-    p_analysis_id: args.analysisId,
+    p_analysis_id: args.analysisId as string,
     p_restore_free_use: args.restoreFreeUse,
   });
   if (error) throw new Error(error.message);

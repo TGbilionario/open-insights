@@ -139,6 +139,23 @@ export function AiAnalysisPage() {
           <h3><i>{icon}</i> {label}</h3><p>{result.sections[key]}</p>
         </article>)}
       </div>
+
+      <section className="pxm-ai-sources">
+        <div className="pxm-section-head"><div><span>RASTREABILIDADE</span><h3>Fontes consultadas</h3></div></div>
+        {result.verificationStatus === "no_sources" ? (
+          <p className="pxm-ai-source-empty">Nenhuma fonte pública foi recuperada. Fatos atuais devem ser tratados como não verificados.</p>
+        ) : (
+          <div className="pxm-ai-source-list">
+            {result.verificationSources.map((source, index) => (
+              <a key={source.url} href={source.url} target="_blank" rel="noreferrer">
+                <span>{index + 1}</span>
+                <div><b>{source.source}</b><strong>{source.title}</strong><small>{source.authority === "official" ? "Fonte oficial" : "Veículo jornalístico"} · {source.sourceType}</small></div>
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+
       <div className="pxm-ai-tech"><Zap size={13}/> {result.provider} · {result.model} · {result.totalTokens} tokens · {result.creditsCharged} créditos ({result.creditSource === "community" ? "comunidade" : "pessoais"})</div>
     </section>}
 

@@ -101,6 +101,9 @@ export async function runAnalysisPipeline(input: {
         input_tokens: result.usage.inputTokens,
         output_tokens: result.usage.outputTokens,
         total_tokens: result.usage.totalTokens,
+        verification_sources: result.verificationSources,
+        verification_checked_at: new Date().toISOString(),
+        verification_status: result.verificationSources.length ? "sources_found" : "no_sources",
         status: "completed",
       })
       .eq("id", analysisId)

@@ -52,9 +52,15 @@ REGRA MÁXIMA — NÃO INVENTAR DADOS
 - Nunca transforme uma hipótese em fato.
 - Nunca atribua uma probabilidade numérica a um cenário sem dados que sustentem esse número.
 - Se não houver dados suficientes para uma estimativa quantitativa, diga explicitamente: "Não há dados suficientes para uma estimativa percentual confiável."
-- Se uma informação política atual não puder ser confirmada pelo contexto fornecido, trate-a como "não verificada" em vez de preencher a lacuna com memória.
+- Se uma informação política atual não puder ser confirmada pelo contexto fornecido, trate-a como "NÃO VERIFICADO" em vez de preencher a lacuna com memória.
 - Não cite partidos, cargos ou situações atuais quando houver dúvida sobre sua vigência.
-- Não invente fontes. Só mencione fontes quando elas forem fornecidas no contexto.\n- Para fatos atuais ou sujeitos a mudança (candidaturas, cargos, partidos, pesquisas, decisões, alianças e números), exija apoio nas fontes de checagem. Se não houver apoio, escreva "não verificado".\n- Antes de produzir o JSON, faça uma checagem interna de cada afirmação factual e corrija inconsistências óbvias.
+- Não invente fontes. Só mencione fontes quando elas forem fornecidas no contexto.
+- Para fatos atuais ou sujeitos a mudança (candidaturas, cargos, partidos, pesquisas, decisões, alianças e números), exija apoio nas fontes de checagem. Se não houver apoio, escreva "NÃO VERIFICADO".
+- Uma manchete ou título de fonte é evidência de contexto, não prova suficiente de cada detalhe. Não extrapole além do que a fonte sustenta.
+- Priorize fontes classificadas como OFFICIAL para cargos, candidaturas, partidos, decisões e números institucionais.
+- Nunca escreva "senador ou deputado", "pode ser", ou equivalentes quando uma fonte oficial fornecida resolve a dúvida. Escolha o dado sustentado pela fonte.
+- Não trate a lista de fontes como validação automática: a resposta deve indicar quando um fato não foi suficientemente confirmado.
+- Antes de produzir o JSON, faça uma checagem interna de cada afirmação factual e corrija inconsistências óbvias.
 
 SEPARAÇÃO OBRIGATÓRIA
 Diferencie sempre:
@@ -201,7 +207,6 @@ class HuggingFaceProvider implements AiAnalysisProvider {
     if (!content) throw new Error("Hugging Face retornou uma resposta vazia.");
 
     const analysis = parseSections(content);
-    analysis.scenarioAnalysis += `\\n\\nFONTES CONSULTADAS NA CHECAGEM\\n${verificationSources}`;
     const u = payload.usage;
     const usage: TokenUsage =
       u && typeof u.prompt_tokens === "number" && typeof u.completion_tokens === "number"

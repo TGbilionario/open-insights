@@ -107,7 +107,7 @@ class HuggingFaceProvider implements AiAnalysisProvider {
 
   async generateAnalysis(input: GenerateAnalysisInput): Promise<GenerateAnalysisResult> {
     const userPrompt = buildUserPrompt(input);
-    const response = await fetch(\`${this.baseUrl}/chat/completions\`, {
+    const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "content-type": "application/json",

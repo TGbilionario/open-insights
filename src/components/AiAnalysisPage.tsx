@@ -47,7 +47,7 @@ export function AiAnalysisPage() {
   const freeLeft = state ? Math.max(state.freeUsesLimit - state.freeUsesUsed, 0) : 0;
   const canUseCommunity = !!state && freeLeft > 0 && state.communityRemaining >= state.reservationCredits;
   const canUsePersonal = !!state && state.personalBalance >= state.reservationCredits;
-  const canSubmit = canUseCommunity || canUsePersonal;
+  const canSubmit = !!state && (state.testMode || canUseCommunity || canUsePersonal);
 
   const renewalLabel = useMemo(() => {
     if (!state) return "";
@@ -83,7 +83,8 @@ export function AiAnalysisPage() {
       <p>Faça uma pergunta sobre política brasileira e receba um cenário estruturado em cinco partes: o que se sabe, o que pode acontecer e o que pode mudar tudo.</p>
     </div>
 
-    {state?.demoMode && <div className="pxm-ai-demo"><Wand2 size={16}/><div><b>Modo demonstração ativo</b><span>Nenhuma requisição externa de IA é feita. As respostas são geradas localmente apenas para testar o fluxo completo de créditos e histórico.</span></div></div>}
+    {state?.testMode && <div className="pxm-ai-demo"><Wand2 size={16}/><div><b>Modo de teste administrativo ativo</b><span>As chamadas reais à IA estão liberadas para testes sem descontar créditos da comunidade ou créditos pessoais. Desative este modo antes de abrir o recurso ao público.</span></div></div>}
+    {state?.demoMode && !state.testMode && <div className="pxm-ai-demo"><Wand2 size={16}/><div><b>Modo demonstração ativo</b><span>Nenhuma requisição externa de IA é feita. As respostas são geradas localmente apenas para testar o fluxo completo de créditos e histórico.</span></div></div>}
 
     <div className="pxm-ai-credits">
       <div className="pxm-ai-credit-card"><span>CRÉDITOS DA COMUNIDADE</span><strong>{state ? state.communityRemaining.toLocaleString("pt-BR") : "—"}</strong><small>de {state ? state.communityDailyLimit.toLocaleString("pt-BR") : "—"} por dia · valor provisório</small></div>

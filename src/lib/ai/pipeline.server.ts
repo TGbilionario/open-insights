@@ -128,7 +128,13 @@ export async function runAnalysisPipeline(input: {
     return {
       ok: false,
       reason: "provider_error",
-      message: "A análise falhou e nenhum crédito foi cobrado. Você pode tentar novamente.",
+      message: (() => {
+        const detail = error instanceof Error ? error.message : "";
+        const safe = detail.startsWith("Hugging Face:") || detail.startsWith("Provedor de IA respondeu");
+        return safe
+          ? `${detail} Nenhum crédito foi cobrado.`
+          : "A análise falhou e nenhum crédito foi cobrado. Você pode tentar novamente.";
+      })(),
       state: await buildState(userKey),
     };
   }

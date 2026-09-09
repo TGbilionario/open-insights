@@ -18,7 +18,7 @@ const OFFICIAL_HOSTS: Record<string, { authority: VerificationSource["authority"
 
 function decodeXml(value: string): string {
   return value
-    .replace(/<!\\[CDATA\\[(.*?)\\]\\]>/gs, "$1")
+    .replace(/<!\[CDATA\[(.*?)\]\]>/gs, "$1")
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
@@ -52,13 +52,13 @@ function classifyUrl(url: string, sourceName: string): Pick<VerificationSource, 
 
 function parseRss(xml: string): VerificationSource[] {
   const items: VerificationSource[] = [];
-  const blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) ?? [];
+  const blocks = xml.match(/<item[\s\S]*?<\/item>/gi) ?? [];
 
   for (const block of blocks.slice(0, 10)) {
-    const title = block.match(/<title>([\\s\\S]*?)<\\/title>/i)?.[1];
-    const link = block.match(/<link>([\\s\\S]*?)<\\/link>/i)?.[1];
-    const source = block.match(/<source[^>]*>([\\s\\S]*?)<\\/source>/i)?.[1];
-    const published = block.match(/<pubDate>([\\s\\S]*?)<\\/pubDate>/i)?.[1];
+    const title = block.match(/<title>([\s\S]*?)<\/title>/i)?.[1];
+    const link = block.match(/<link>([\s\S]*?)<\/link>/i)?.[1];
+    const source = block.match(/<source[^>]*>([\s\S]*?)<\/source>/i)?.[1];
+    const published = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/i)?.[1];
 
     const cleanTitle = stripHtml(title ?? "");
     const cleanLink = decodeXml((link ?? "").trim());

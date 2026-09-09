@@ -1,5 +1,5 @@
 import { AlertTriangle, Coins, Loader2, RefreshCw, Sparkles, Target, Wand2, Zap } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   getAiAnalysisHistory,
@@ -35,6 +35,8 @@ export function AiAnalysisPage() {
   const [result, setResult] = useState<AnalysisRecordDTO | null>(null);
   const [error, setError] = useState("");
   const [blocked, setBlocked] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const resultRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => { setUserKey(getUserKey()); }, []);
 
@@ -64,6 +66,11 @@ export function AiAnalysisPage() {
         setResult(response.record);
         setHistory((h) => [response.record, ...h].slice(0, 10));
         setQuestion("");
+        setShowSuccess(true);
+        window.setTimeout(() => setShowSuccess(false), 3200);
+        window.setTimeout(() => {
+          resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 120);
       } else if (response.reason === "credits_exhausted") {
         setBlocked(response.message);
       } else {
@@ -99,7 +106,7 @@ export function AiAnalysisPage() {
       <div className="pxm-ai-ask-foot">
         <small>{question.length}/2000 · reserva de {state?.reservationCredits ?? "—"} créditos por análise (provisório)</small>
         <button className="pxm-primary" onClick={() => void submit()} disabled={loading || !canSubmit || question.trim().length < 10}>
-          {loading ? <><Loader2 size={16} className="pxm-spin"/> Analisando...</> : <><Sparkles size={16}/> Gerar análise</>}
+          {loading ? <><Loader2 size={16} className="pxm-spin"/> Analisando sua pergunta...</> : showSuccess ? <><Target size={16}/> Análise concluída</> : <><Sparkles size={16}/> Gerar análise</>}
         </button>
       </div>
 
@@ -123,7 +130,9 @@ export function AiAnalysisPage() {
       {error && <div className="pxm-ai-note pxm-ai-note-warn"><AlertTriangle size={15}/> {error} <button className="pxm-text-btn" onClick={() => void submit()}>Tentar de novo</button></div>}
     </section>
 
-    {result && <section className="pxm-ai-result">
+    {showSuccess && result && <div className="pxm-ai-success" role="status"><div className="pxm-ai-success-icon">✓</div><div><strong>ANÁLISE CONCLUÍDA</strong><span>Seu resultado está logo abaixo. Você já pode ler os 5 cenários da análise.</span></div><button className="pxm-ai-success-link" onClick={() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>Ver resultado ↓</button></div>}
+
+    {result && <section ref={resultRef} className="pxm-ai-result pxm-ai-result-ready">
       <div className="pxm-section-head"><div><span>RESULTADO</span><h2>{result.question}</h2></div></div>
       <div className="pxm-ai-sections">
         {SECTIONS.map(([key, icon, label]) => <article key={key} className="pxm-ai-section-card">

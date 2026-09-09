@@ -13,6 +13,9 @@ export async function runAnalysisPipeline(input: {
 }): Promise<RunAnalysisResult> {
   const { userKey, question } = input;
   const userId = null;
+  // TEMPORARY TEST SWITCH: only enable via a server-side secret in the preview environment.
+  // When active, the real AI provider can be tested without consuming community/personal credits.
+  const testMode = process.env["AI_TEST_MODE"] === "true";
 
   if (question.length < 10) {
     return {
@@ -23,24 +26,27 @@ export async function runAnalysisPipeline(input: {
     };
   }
 
-  // 1) Reserva atômica ANTES da chamada ao provedor.
-  const reservation = await reserveCredits(userKey, userId, CREDIT_CONFIG.reservationCredits);
-  if (!reservation.ok) {
-    return {
-      ok: false,
-      reason: "credits_exhausted",
-      message:
-        reservation.reason === "free_uses_exhausted"
-          ? "Você já usou seus usos gratuitos de hoje e não há créditos pessoais suficientes."
-          : "Os créditos gratuitos da comunidade acabaram por hoje.",
-      state: await buildState(userKey),
-    };
+  // 1) Reserve atomically before calling the provider. In test mode, skip all credit movement.
+  let source: "community" | "personal" = "community";
+  let reserved = 0;
+  if (!testMode) {
+    const reservation = await reserveCredits(userKey, userId, CREDIT_CONFIG.reservationCredits);
+    if (!reservation.ok) {
+      return {
+        ok: false,
+        reason: "credits_exhausted",
+        message:
+          reservation.reason === "free_uses_exhausted"
+            ? "Você já usou seus usos gratuitos de hoje e não há créditos pessoais suficientes."
+            : "Os créditos gratuitos da comunidade acabaram por hoje.",
+        state: await buildState(userKey),
+      };
+    }
+    source = reservation.source;
+    reserved = reservation.reserved;
   }
 
-  const source = reservation.source;
-  const reserved = reservation.reserved;
-
-  // 2) Registro pendente (auditoria mesmo em caso de falha).
+  // 2) Pending audit record, including test executions.
   const { data: pending, error: insertError } = await supabaseAdmin
     .from("ai_analysis_history")
     .insert({
@@ -54,14 +60,16 @@ export async function runAnalysisPipeline(input: {
     .single();
 
   if (insertError || !pending) {
-    await refundReservation({
-      userKey,
-      userId,
-      source,
-      amount: reserved,
-      analysisId: null,
-      restoreFreeUse: source === "community",
-    });
+    if (!testMode) {
+      await refundReservation({
+        userKey,
+        userId,
+        source,
+        amount: reserved,
+        analysisId: null,
+        restoreFreeUse: source === "community",
+      });
+    }
     return {
       ok: false,
       reason: "provider_error",
@@ -75,7 +83,7 @@ export async function runAnalysisPipeline(input: {
 
   try {
     const result = await provider.generateAnalysis({ question, context: input.context });
-    const charged = computeCreditCost(result.usage);
+    const charged = testMode ? 0 : computeCreditCost(result.usage);
 
     const { data: row, error: updateError } = await supabaseAdmin
       .from("ai_analysis_history")
@@ -98,8 +106,10 @@ export async function runAnalysisPipeline(input: {
       .single();
     if (updateError || !row) throw new Error(updateError?.message ?? "Falha ao salvar a análise.");
 
-    // 3) Cobra o custo real e devolve a sobra da reserva.
-    await settleCredits({ userKey, userId, source, reserved, charged, analysisId });
+    // 3) Settle the real cost only in normal mode. Test mode never moves credits.
+    if (!testMode) {
+      await settleCredits({ userKey, userId, source, reserved, charged, analysisId });
+    }
 
     return {
       ok: true,
@@ -108,15 +118,17 @@ export async function runAnalysisPipeline(input: {
       usageEstimated: result.usage.estimated,
     };
   } catch (error) {
-    // 4) Falha do provedor: devolve 100% da reserva. Nunca queima créditos.
-    await refundReservation({
-      userKey,
-      userId,
-      source,
-      amount: reserved,
-      analysisId,
-      restoreFreeUse: source === "community",
-    });
+    // 4) Provider failure refunds the reservation in normal mode. Test mode had no reservation.
+    if (!testMode) {
+      await refundReservation({
+        userKey,
+        userId,
+        source,
+        amount: reserved,
+        analysisId,
+        restoreFreeUse: source === "community",
+      });
+    }
     await supabaseAdmin
       .from("ai_analysis_history")
       .update({

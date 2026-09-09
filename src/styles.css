@@ -195,3 +195,46 @@ a{color:inherit;text-decoration:none}
   .pxm-ai-ask-foot{align-items:stretch;flex-direction:column}
   .pxm-ai-ask .pxm-primary{justify-content:center}
 }
+
+
+/* AI analysis readability — dark theme overrides */
+.pxm-ai-credits .pxm-ai-credit-card,
+.pxm-ai-ask,
+.pxm-ai-result,
+.pxm-ai-history{
+  background:#101419;
+  border-color:#2a313b;
+  color:#f5f7fa;
+}
+.pxm-ai-credit-card span,
+.pxm-ai-ask-foot small,
+.pxm-ai-tech,
+.pxm-ai-history .pxm-history-list button span{color:#8f99a8;opacity:1}
+.pxm-ai-credit-card strong{color:#ffffff}
+.pxm-ai-credit-card small{color:#8f99a8;opacity:1}
+.pxm-ai-ask label{color:#f5f7fa}
+.pxm-ai-ask textarea{
+  background:#0b0f14;
+  color:#f5f7fa;
+  border-color:#343c48;
+}
+.pxm-ai-ask textarea::placeholder{color:#697586;opacity:1}
+.pxm-ai-ask textarea:focus{border-color:#ff4b3f;box-shadow:0 0 0 2px #ff4b3f22}
+.pxm-ai-result .pxm-section-head h2{color:#f5f7fa}
+.pxm-ai-section-card{
+  background:#151a20;
+  border-color:#303742;
+  color:#f1f4f7;
+}
+.pxm-ai-section-card h3{color:#ffffff}
+.pxm-ai-section-card p{color:#c3cad4}
+.pxm-ai-history .pxm-history-list{background:#0f1318;border-color:#2a313b}
+.pxm-ai-history .pxm-history-list button{color:#f0f3f6;border-color:#252c35}
+.pxm-ai-history .pxm-history-list button b{color:#e7ebf0}
+.pxm-ai-history .pxm-history-list button:hover{background:#171c22}
+.pxm-ai-note{background:#14191f;color:#c5ccd6;border:1px solid #2b323c}
+.pxm-ai-note-warn{background:#211b0d;border-color:#5a4514;color:#f1d78a}
+.pxm-ai-demo{background:#17172a;border-color:#45458a;color:#e9e9ff}
+.pxm-ai-demo span{color:#bfc2d9;opacity:1}
+.pxm-ai-blocked{background:#211315;border-color:#633037;color:#f4d8d9}
+.pxm-ai-blocked p,.pxm-ai-blocked li{color:#c9b0b2}

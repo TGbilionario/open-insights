@@ -156,7 +156,9 @@ class HuggingFaceProvider implements AiAnalysisProvider {
   ) {}
 
   async generateAnalysis(input: GenerateAnalysisInput): Promise<GenerateAnalysisResult> {
-    const sources = await collectVerificationSources(input.question);\n    const verificationSources = formatVerificationSources(sources);\n    const userPrompt = buildUserPrompt({ ...input, verificationSources });
+    const sources = await collectVerificationSources(input.question);
+    const verificationSources = formatVerificationSources(sources);
+    const userPrompt = buildUserPrompt({ ...input, verificationSources });
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -187,7 +189,8 @@ class HuggingFaceProvider implements AiAnalysisProvider {
     const content = payload.choices?.[0]?.message?.content;
     if (!content) throw new Error("Hugging Face retornou uma resposta vazia.");
 
-    const analysis = parseSections(content);\n    analysis.scenarioAnalysis += `\\n\\nFONTES CONSULTADAS NA CHECAGEM\\n${verificationSources}`;
+    const analysis = parseSections(content);
+    analysis.scenarioAnalysis += `\\n\\nFONTES CONSULTADAS NA CHECAGEM\\n${verificationSources}`;
     const u = payload.usage;
     const usage: TokenUsage =
       u && typeof u.prompt_tokens === "number" && typeof u.completion_tokens === "number"

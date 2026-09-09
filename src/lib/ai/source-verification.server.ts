@@ -27,12 +27,12 @@ function decodeXml(value: string): string {
 }
 
 function stripHtml(value: string): string {
-  return decodeXml(value).replace(/<[^>]+>/g, " ").replace(/\\s+/g, " ").trim();
+  return decodeXml(value).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function classifyUrl(url: string, sourceName: string): Pick<VerificationSource, "authority" | "sourceType"> {
   try {
-    const hostname = new URL(url).hostname.toLowerCase().replace(/^www\\./, "");
+    const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
     const exact = OFFICIAL_HOSTS[hostname];
     if (exact) return exact;
     const official = Object.entries(OFFICIAL_HOSTS).find(([host]) => hostname.endsWith("." + host));

@@ -1,4 +1,8 @@
-import { collectVerificationSources, formatVerificationSources } from "./source-verification.server";
+import {
+  collectVerificationSources,
+  formatVerificationSources,
+  type VerificationSource,
+} from "./source-verification.server";
 
 import {
   CREDIT_CONFIG,
@@ -26,6 +30,7 @@ export type GenerateAnalysisResult = {
   provider: string;
   model: string;
   demo: boolean;
+  verificationSources: VerificationSource[];
 };
 
 export interface AiAnalysisProvider {
@@ -85,6 +90,10 @@ QUALIDADE DA ENTREGA
 - Não faça propaganda, persuasão partidária, recomendação de voto ou ataque a pessoas/partidos.
 
 FORMATO
+Na primeira seção, comece com "🟢 FATOS VERIFICADOS" e depois "🔎 ANÁLISE". Só coloque como fato o que estiver sustentado pelas fontes fornecidas ou for estável e inequívoco.
+Na seção de projeção, comece com "🔵 PROJEÇÕES DA IA". Na seção de consequências, comece com "⚡ IMPACTO". Na seção de cenário mais provável, comece com "🎯 CENÁRIO PROJETADO" e informe "Confiança: ALTA, MÉDIA ou BAIXA", sem percentual inventado. Na última seção, comece com "⚠️ O QUE PODE MUDAR".
+O "cenário mais provável" deve ser uma conclusão condicional, nunca uma certeza sobre o resultado eleitoral.
+
 Responda SOMENTE com um objeto JSON válido, sem markdown e sem texto antes ou depois, com exatamente estas chaves:
 {
   "scenarioAnalysis": "...",
@@ -131,6 +140,7 @@ class DemoProvider implements AiAnalysisProvider {
       provider: this.name,
       model: this.model,
       demo: true,
+      verificationSources: [],
     };
   }
 }
@@ -210,6 +220,7 @@ class HuggingFaceProvider implements AiAnalysisProvider {
       provider: this.name,
       model: this.model,
       demo: false,
+      verificationSources: sources,
     };
   }
 }
@@ -258,7 +269,9 @@ class CerebrasProvider implements AiAnalysisProvider {
   ) {}
 
   async generateAnalysis(input: GenerateAnalysisInput): Promise<GenerateAnalysisResult> {
-    const userPrompt = buildUserPrompt(input);
+    const sources = await collectVerificationSources(input.question);
+    const verificationSources = formatVerificationSources(sources);
+    const userPrompt = buildUserPrompt({ ...input, verificationSources });
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -304,7 +317,14 @@ class CerebrasProvider implements AiAnalysisProvider {
           }
         : estimateUsage(SYSTEM_PROMPT + userPrompt, content);
 
-    return { analysis, usage, provider: this.name, model: this.model, demo: false };
+    return {
+      analysis,
+      usage,
+      provider: this.name,
+      model: this.model,
+      demo: false,
+      verificationSources: sources,
+    };
   }
 }
 

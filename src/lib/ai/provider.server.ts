@@ -111,7 +111,7 @@ class HuggingFaceProvider implements AiAnalysisProvider {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        authorization: \`Bearer ${this.apiKey}\`,
+        authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
         model: this.model,
@@ -127,9 +127,7 @@ class HuggingFaceProvider implements AiAnalysisProvider {
 
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
-      throw new Error(
-        \`Hugging Face respondeu ${response.status}: ${detail.slice(0, 300) || "sem detalhes"}\`,
-      );
+      throw new Error(`Hugging Face respondeu ${response.status}: ${detail.slice(0, 300) || "sem detalhes"}`);
     }
 
     const payload = (await response.json()) as HuggingFaceChatCompletion;

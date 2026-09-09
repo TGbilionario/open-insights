@@ -127,6 +127,9 @@ class HuggingFaceProvider implements AiAnalysisProvider {
 
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
+      if (response.status === 401) throw new Error("Hugging Face: HF_TOKEN inválido ou expirado.");
+      if (response.status === 403) throw new Error("Hugging Face: HF_TOKEN sem permissão para Inference Providers.");
+      if (response.status === 429) throw new Error("Hugging Face: limite temporário de requisições atingido.");
       throw new Error(`Hugging Face respondeu ${response.status}: ${detail.slice(0, 300) || "sem detalhes"}`);
     }
 
@@ -286,7 +289,7 @@ function parseSections(content: string): AnalysisSections {
 export function getAnalysisProvider(): AiAnalysisProvider {
   const hfToken = process.env["HF_TOKEN"];
   if (hfToken) {
-    const model = process.env["HF_MODEL"] || "openai/gpt-oss-120b:groq";
+    const model = process.env["HF_MODEL"] || "openai/gpt-oss-120b:fastest";
     const baseUrl = process.env["HF_BASE_URL"] || "https://router.huggingface.co/v1";
     return new HuggingFaceProvider(hfToken, model, baseUrl);
   }

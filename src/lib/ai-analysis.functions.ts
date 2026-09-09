@@ -1,5 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 
+export type VerificationSourceDTO = {
+  title: string;
+  source: string;
+  url: string;
+  publishedAt?: string;
+  authority: "official" | "journalistic" | "other";
+  sourceType: "TSE" | "Senado" | "Câmara" | "STF" | "Governo" | "Imprensa" | "Outro";
+};
+
 export type AnalysisSectionsDTO = {
   scenarioAnalysis: string;
   projection: string;
@@ -34,6 +43,8 @@ export type AnalysisRecordDTO = {
   creditsCharged: number;
   creditSource: string;
   totalTokens: number;
+  verificationSources: VerificationSourceDTO[];
+  verificationStatus: "not_run" | "sources_found" | "no_sources";
   sections: AnalysisSectionsDTO;
 };
 

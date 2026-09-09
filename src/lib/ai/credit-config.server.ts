@@ -56,9 +56,12 @@ export function estimateUsage(promptText: string, answerText: string): TokenUsag
 }
 
 export function computeCreditCost(usage: TokenUsage): number {
+  // reasoningTokens é normalmente um subconjunto de completionTokens.
+  // Não somamos os dois integralmente para evitar dupla cobrança.
+  const visibleOutputTokens = Math.max(usage.outputTokens - usage.reasoningTokens, 0);
   const weighted =
     usage.inputTokens * CREDIT_CONFIG.inputWeight +
-    usage.outputTokens * CREDIT_CONFIG.outputWeight +
+    visibleOutputTokens * CREDIT_CONFIG.outputWeight +
     usage.reasoningTokens * CREDIT_CONFIG.reasoningWeight;
   const cost = Math.ceil(weighted / CREDIT_CONFIG.tokenUnit);
   return Math.max(cost, CREDIT_CONFIG.minimumChargePerAnalysis);

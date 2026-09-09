@@ -84,6 +84,81 @@ class DemoProvider implements AiAnalysisProvider {
   }
 }
 
+
+type HuggingFaceChatCompletion = {
+  choices?: { message?: { content?: string } }[];
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+    completion_tokens_details?: { reasoning_tokens?: number };
+  };
+};
+
+class HuggingFaceProvider implements AiAnalysisProvider {
+  readonly name = "huggingface";
+  readonly demo = false;
+
+  constructor(
+    private readonly apiKey: string,
+    readonly model: string,
+    private readonly baseUrl: string,
+  ) {}
+
+  async generateAnalysis(input: GenerateAnalysisInput): Promise<GenerateAnalysisResult> {
+    const userPrompt = buildUserPrompt(input);
+    const response = await fetch(\`${this.baseUrl}/chat/completions\`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: \`Bearer ${this.apiKey}\`,
+      },
+      body: JSON.stringify({
+        model: this.model,
+        temperature: 0.4,
+        max_tokens: 1600,
+        stream: false,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userPrompt },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      throw new Error(
+        \`Hugging Face respondeu ${response.status}: ${detail.slice(0, 300) || "sem detalhes"}\`,
+      );
+    }
+
+    const payload = (await response.json()) as HuggingFaceChatCompletion;
+    const content = payload.choices?.[0]?.message?.content;
+    if (!content) throw new Error("Hugging Face retornou uma resposta vazia.");
+
+    const analysis = parseSections(content);
+    const u = payload.usage;
+    const usage: TokenUsage =
+      u && typeof u.prompt_tokens === "number" && typeof u.completion_tokens === "number"
+        ? {
+            inputTokens: u.prompt_tokens,
+            outputTokens: u.completion_tokens,
+            reasoningTokens: u.completion_tokens_details?.reasoning_tokens ?? 0,
+            totalTokens: u.total_tokens ?? u.prompt_tokens + u.completion_tokens,
+            estimated: false,
+          }
+        : estimateUsage(SYSTEM_PROMPT + userPrompt, content);
+
+    return {
+      analysis,
+      usage,
+      provider: this.name,
+      model: this.model,
+      demo: false,
+    };
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Adaptador Cerebras (API compatível com chat completions no estilo OpenAI)
 // ---------------------------------------------------------------------------
@@ -211,6 +286,13 @@ function parseSections(content: string): AnalysisSections {
  * cai automaticamente no modo demonstração.
  */
 export function getAnalysisProvider(): AiAnalysisProvider {
+  const hfToken = process.env["HF_TOKEN"];
+  if (hfToken) {
+    const model = process.env["HF_MODEL"] || "openai/gpt-oss-120b:groq";
+    const baseUrl = process.env["HF_BASE_URL"] || "https://router.huggingface.co/v1";
+    return new HuggingFaceProvider(hfToken, model, baseUrl);
+  }
+
   const apiKey = process.env["CEREBRAS_API_KEY"];
   if (!apiKey) return new DemoProvider();
   const model = process.env["CEREBRAS_MODEL"] || "gpt-oss-120b";

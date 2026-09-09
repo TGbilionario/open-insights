@@ -20,6 +20,7 @@ export type AiStateDTO = {
   model: string;
   reservationCredits: number;
   provisional: boolean;
+  testMode: boolean;
 };
 
 export type AnalysisRecordDTO = {

@@ -73,7 +73,7 @@ export async function refundReservation(args: {
     p_user_id: args.userId as string,
     p_source: args.source,
     p_amount: args.amount,
-    p_analysis_id: args.analysisId,
+    p_analysis_id: args.analysisId as string,
     p_restore_free_use: args.restoreFreeUse,
   });
   if (error) throw new Error(error.message);

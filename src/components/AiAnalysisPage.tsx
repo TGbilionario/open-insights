@@ -1,3 +1,4 @@
+import "@/ai-analysis.css";
 import { AlertTriangle, Coins, Loader2, RefreshCw, Sparkles, Target, Wand2, Zap } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 

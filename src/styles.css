@@ -326,3 +326,98 @@ a{color:inherit;text-decoration:none}
 .pxm-ai-source-list small{font-size:9px;color:#707b89;margin-top:4px}
 .pxm-ai-source-empty{margin:0;color:#9ba4b0;font-size:11px;line-height:1.55}
 @media(max-width:600px){.pxm-ai-sources{padding:14px}.pxm-ai-source-list>a{grid-template-columns:24px 1fr}.pxm-ai-source-list>a>span{width:24px;height:24px}}
+
+/* AI analysis — stronger tool identity and presentation */
+.pxm-ai-intro{
+  max-width:900px;
+  margin-bottom:34px;
+}
+.pxm-ai-tool-title{
+  position:relative;
+  padding:22px 24px 20px;
+  border:1px solid #3a2a2d;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 92% 20%,#ff4c3f18,transparent 32%),
+    linear-gradient(135deg,#181316,#101419 72%);
+  box-shadow:0 18px 50px rgba(0,0,0,.22);
+  overflow:hidden;
+}
+.pxm-ai-tool-title::after{
+  content:"AI";
+  position:absolute;
+  right:20px;
+  top:-10px;
+  font-size:92px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:-.08em;
+  color:#ffffff05;
+  pointer-events:none;
+}
+.pxm-ai-tool-kicker{
+  display:block;
+  color:#ff8178!important;
+  font-size:9px!important;
+  letter-spacing:.16em!important;
+  font-weight:850!important;
+  margin-bottom:9px;
+}
+.pxm-ai-tool-title h1{
+  position:relative;
+  z-index:1;
+  margin:0;
+  color:#fff;
+  font-size:clamp(30px,4vw,48px);
+  line-height:1;
+  letter-spacing:-.055em;
+  font-weight:900;
+}
+.pxm-ai-title-line{
+  width:92px;
+  height:3px;
+  margin-top:16px;
+  border-radius:99px;
+  background:linear-gradient(90deg,var(--accent),#ff754e);
+  box-shadow:0 0 20px #ff3b3040;
+}
+.pxm-ai-intro>h2{
+  max-width:800px;
+  margin:22px 0 10px;
+  color:#f5f7fa;
+  font-size:clamp(20px,2.4vw,28px);
+  line-height:1.22;
+  letter-spacing:-.025em;
+  font-weight:780;
+}
+.pxm-ai-intro>p{
+  max-width:790px;
+  color:#929cab;
+  font-size:13px;
+  line-height:1.7;
+}
+.pxm-ai-intro>p strong{color:#dfe4ea;font-weight:750}
+.pxm-ai-intro-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:16px;
+}
+.pxm-ai-intro-chips span{
+  display:inline-flex;
+  align-items:center;
+  padding:8px 11px;
+  border:1px solid #2d343e;
+  border-radius:999px;
+  background:#12171d;
+  color:#b8c1cc;
+  font-size:10px;
+  font-weight:750;
+}
+@media(max-width:600px){
+  .pxm-ai-tool-title{padding:18px 17px}
+  .pxm-ai-tool-title h1{font-size:30px}
+  .pxm-ai-tool-title::after{font-size:68px;right:12px}
+  .pxm-ai-intro>h2{font-size:20px}
+  .pxm-ai-intro>p{font-size:12px}
+}

@@ -84,10 +84,17 @@ export function AiAnalysisPage() {
   };
 
   return <div className="pxm-page pxm-ai">
-    <div className="pxm-page-head">
-      <span>ANÁLISE E SUPOSIÇÃO DA AI</span>
-      <h1>Descubra o que a IA acha que pode acontecer a seguir.</h1>
-      <p>Apresente um acontecimento, decisão, declaração ou cenário político e veja como uma inteligência artificial analisa a situação, imagina possíveis desdobramentos e aponta quais consequências podem surgir. É como perguntar para um amigo extremamente inteligente: "Beleza... isso aconteceu. E agora? O que você acha que vai acontecer?"</p>
+    <div className="pxm-page-head pxm-ai-intro">
+      <div className="pxm-ai-tool-title">
+        <span className="pxm-ai-tool-kicker">EXPERIÊNCIA DE INTELIGÊNCIA ARTIFICIAL</span>
+        <h1>ANÁLISE E SUPOSIÇÃO DA AI</h1>
+        <div className="pxm-ai-title-line" aria-hidden="true" />
+      </div>
+      <h2>Veja como uma inteligência artificial analisa a situação, imagina possíveis desdobramentos e aponta quais consequências podem surgir.</h2>
+      <p>É uma experiência para explorar possibilidades: você apresenta um acontecimento ou cenário e pergunta, como faria a um amigo extremamente inteligente: <strong>“Isso aconteceu. E agora? O que você acha que vai acontecer?”</strong></p>
+      <div className="pxm-ai-intro-chips" aria-label="Como funciona">
+        <span>🧠 Analisa</span><span>🔮 Imagina</span><span>⚡ Aponta consequências</span>
+      </div>
     </div>
 
     {state?.testMode && <div className="pxm-ai-demo"><Wand2 size={16}/><div><b>Modo de teste administrativo ativo</b><span>As chamadas reais à IA estão liberadas para testes sem descontar créditos da comunidade ou créditos pessoais. Desative este modo antes de abrir o recurso ao público.</span></div></div>}

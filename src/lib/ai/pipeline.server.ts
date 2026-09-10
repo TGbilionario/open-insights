@@ -13,11 +13,7 @@ export async function runAnalysisPipeline(input: {
 }): Promise<RunAnalysisResult> {
   const { userKey, question } = input;
   const userId = null;
-  // TEMPORARY TEST SWITCH: only enable via a server-side secret in the preview environment.
-  // When active, the real AI provider can be tested without consuming community/personal credits.
-  // TEMPORARY REPOSITORY TEST MODE — remove/revert after provider validation.
-  const REPOSITORY_TEST_MODE = true;
-  const testMode = REPOSITORY_TEST_MODE || process.env["AI_TEST_MODE"] === "true";
+  const testMode = false;
 
   if (question.length < 10) {
     return {
@@ -28,7 +24,7 @@ export async function runAnalysisPipeline(input: {
     };
   }
 
-  // 1) Reserve atomically before calling the provider. In test mode, skip all credit movement.
+  // 1) Reserve credits atomically before calling the provider.
   let source: "community" | "personal" = "community";
   let reserved = 0;
   if (!testMode) {
@@ -48,7 +44,6 @@ export async function runAnalysisPipeline(input: {
     reserved = reservation.reserved;
   }
 
-  // 2) Pending audit record, including test executions.
   const { data: pending, error: insertError } = await supabaseAdmin
     .from("ai_analysis_history")
     .insert({
@@ -108,7 +103,6 @@ export async function runAnalysisPipeline(input: {
       .single();
     if (updateError || !row) throw new Error(updateError?.message ?? "Falha ao salvar a análise.");
 
-    // 3) Settle the real cost only in normal mode. Test mode never moves credits.
     if (!testMode) {
       await settleCredits({ userKey, userId, source, reserved, charged, analysisId });
     }
@@ -126,7 +120,6 @@ export async function runAnalysisPipeline(input: {
       usageEstimated: result.usage.estimated,
     };
   } catch (error) {
-    // 4) Provider failure refunds the reservation in normal mode. Test mode had no reservation.
     if (!testMode) {
       await refundReservation({
         userKey,

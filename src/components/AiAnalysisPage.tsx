@@ -49,7 +49,9 @@ export function AiAnalysisPage() {
   const freeLeft = state ? Math.max(state.freeUsesLimit - state.freeUsesUsed, 0) : 0;
   const canUseCommunity = !!state && freeLeft > 0 && state.communityRemaining >= state.reservationCredits;
   const canUsePersonal = !!state && state.personalBalance >= state.reservationCredits;
+  const hasValidQuestion = question.trim().length >= 10;
   const canSubmit = !!state && (state.testMode || canUseCommunity || canUsePersonal);
+  const canAttempt = !!state && hasValidQuestion && !loading;
 
   const renewalLabel = useMemo(() => {
     if (!state) return "";
@@ -57,8 +59,8 @@ export function AiAnalysisPage() {
   }, [state]);
 
   const submit = async () => {
-    if (!userKey || loading || !canSubmit) return;
-    setLoading(true); setError(""); setBlocked(""); setResult(null);
+    if (!userKey || loading || !hasValidQuestion) return;
+    setLoading(true); setError(""); setBlocked(""); setResult(null); setShowSuccess(false);
     try {
       const response = await runAiAnalysis({ data: { userKey, question } });
       setState(response.state);
@@ -106,14 +108,24 @@ export function AiAnalysisPage() {
       <div className="pxm-ai-credit-card"><span>USOS GRATUITOS DE HOJE</span><strong>{state ? `${freeLeft} / ${state.freeUsesLimit}` : "—"}</strong><small>renova em {renewalLabel || "—"}</small></div>
     </div>
 
-    <section className="pxm-ai-ask">
+    <section className={`pxm-ai-ask ${loading ? "pxm-ai-ask-loading" : ""}`}>
       <label htmlFor="pxm-ai-question">Cenário ou acontecimento</label>
       <textarea id="pxm-ai-question" value={question} onChange={(e) => setQuestion(e.target.value)} rows={4}
-        placeholder='Ex.: o Congresso aprovou uma mudança nas regras eleitorais. Beleza... isso aconteceu. E agora? O que você acha que pode acontecer?' maxLength={2000}/>
+        placeholder='Ex.: o Congresso aprovou uma mudança nas regras eleitorais. Beleza... isso aconteceu. E agora? O que você acha que pode acontecer?' maxLength={2000} disabled={loading}/>
+
+      {loading && <div className="pxm-ai-live-loading" role="status" aria-live="polite">
+        <div className="pxm-ai-live-icon"><Loader2 size={22} className="pxm-spin"/></div>
+        <div className="pxm-ai-live-copy">
+          <strong>A IA está analisando o cenário</strong>
+          <span>Estamos cruzando a pergunta com as informações disponíveis e construindo possibilidades. Isso pode levar alguns segundos.</span>
+          <div className="pxm-ai-live-steps"><span className="is-active">Analisando</span><span>Imaginando cenários</span><span>Organizando consequências</span></div>
+        </div>
+      </div>}
+
       <div className="pxm-ai-ask-foot">
         <small>{question.length}/2000 · reserva de {state?.reservationCredits ?? "—"} créditos por análise (provisório)</small>
-        <button className="pxm-primary" onClick={() => void submit()} disabled={loading || !canSubmit || question.trim().length < 10}>
-          {loading ? <><Loader2 size={16} className="pxm-spin"/> Analisando sua pergunta...</> : showSuccess ? <><Target size={16}/> Análise concluída</> : <><Sparkles size={16}/> Gerar análise</>}
+        <button className="pxm-primary" onClick={() => void submit()} disabled={!canAttempt}>
+          {loading ? <><Loader2 size={16} className="pxm-spin"/> Analisando...</> : showSuccess ? <><Target size={16}/> Análise concluída</> : <><Sparkles size={16}/> Gerar análise</>}
         </button>
       </div>
 
@@ -128,7 +140,7 @@ export function AiAnalysisPage() {
           <li>Seus créditos pessoais: <b>{state.personalBalance.toLocaleString("pt-BR")}</b></li>
         </ul>
         <div className="pxm-ai-blocked-actions">
-          <button className="pxm-primary" disabled><Coins size={15}/> Comprar créditos (em breve)</button>
+          <button className="pxm-primary" onClick={() => document.getElementById("pxm-ai-question")?.focus()}><Coins size={15}/> Desbloquear com créditos</button>
           <button className="pxm-ghost" disabled><RefreshCw size={15}/> Aguardar renovação</button>
         </div>
       </div>}
@@ -144,8 +156,8 @@ export function AiAnalysisPage() {
       <div className="pxm-ai-warning">
         <AlertTriangle size={16}/>
         <div>
-          <b>AVISO IMPORTANTE</b>
-          <p>Esta é uma experiência de análise e projeção baseada em inteligência artificial. As respostas representam opiniões, hipóteses, inferências e possíveis cenários construídos pela IA a partir das informações disponíveis. Nem tudo apresentado deve ser interpretado como um fato ou como uma previsão certa do futuro. Novos acontecimentos podem mudar completamente um cenário. Use a ferramenta para explorar possibilidades, não como uma certeza sobre o que irá acontecer.</p>
+          <b className="pxm-ai-hypothesis-badge">HIPÓTESES / SUPOSIÇÕES</b>
+          <p>Esta análise é uma exploração de possibilidades criada pela inteligência artificial. Ela pode combinar informações disponíveis com inferências e projeções; por isso, não deve ser tratada como certeza sobre o que irá acontecer. Novos acontecimentos podem mudar completamente um cenário.</p>
         </div>
       </div>
       <div className="pxm-ai-sections">
@@ -157,7 +169,7 @@ export function AiAnalysisPage() {
       <section className="pxm-ai-sources">
         <div className="pxm-section-head"><div><span>RASTREABILIDADE</span><h3>Fontes consultadas</h3></div></div>
         {result.verificationStatus === "no_sources" ? (
-          <p className="pxm-ai-source-empty">Nenhuma fonte pública foi recuperada. Fatos atuais devem ser tratados como não verificados.</p>
+          <p className="pxm-ai-source-empty">Nenhuma fonte pública foi recuperada. Informações atuais devem ser tratadas como não verificadas.</p>
         ) : (
           <div className="pxm-ai-source-list">
             {result.verificationSources.map((source, index) => (
@@ -181,6 +193,6 @@ export function AiAnalysisPage() {
       </button>)}</div>
     </section>}
 
-    <div className="pxm-note"><AlertTriangle size={18}/><div><b>Explore, não leve como certeza</b><p>As respostas da IA são cenários e opiniões analíticas, não garantias nem previsões oficiais. Política muda rápido: novos fatos podem transformar qualquer projeção.</p></div></div>
+    <div className="pxm-note"><AlertTriangle size={18}/><div><b>Explore possibilidades</b><p>A ferramenta foi criada para imaginar desdobramentos e cenários. Use a análise como uma forma de pensar sobre o que pode acontecer, não como uma previsão garantida.</p></div></div>
   </div>;
 }

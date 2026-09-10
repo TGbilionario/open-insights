@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-import type { RunAnalysisResult } from "../ai-analysis.functions";
+import type { AnalysisRecordDTO, RunAnalysisResult } from "../ai-analysis.functions";
 import { CREDIT_CONFIG, computeCreditCost } from "./credit-config.server";
 import { refundReservation, reserveCredits, settleCredits } from "./credit-service.server";
 import { getAnalysisProvider } from "./provider.server";
@@ -101,9 +101,6 @@ export async function runAnalysisPipeline(input: {
         input_tokens: result.usage.inputTokens,
         output_tokens: result.usage.outputTokens,
         total_tokens: result.usage.totalTokens,
-        verification_sources: result.verificationSources,
-        verification_checked_at: new Date().toISOString(),
-        verification_status: result.verificationSources.length ? "sources_found" : "no_sources",
         status: "completed",
       })
       .eq("id", analysisId)
@@ -116,9 +113,15 @@ export async function runAnalysisPipeline(input: {
       await settleCredits({ userKey, userId, source, reserved, charged, analysisId });
     }
 
+    const record: AnalysisRecordDTO = {
+      ...rowToRecord(row),
+      verificationSources: result.verificationSources,
+      verificationStatus: result.verificationSources.length ? "sources_found" : "no_sources",
+    };
+
     return {
       ok: true,
-      record: rowToRecord(row),
+      record,
       state: await buildState(userKey),
       usageEstimated: result.usage.estimated,
     };

@@ -19,11 +19,11 @@ function getUserKey(): string {
 }
 
 const SECTIONS: [keyof AnalysisRecordDTO["sections"], string, string][] = [
-  ["scenarioAnalysis", "🔎", "Análise do cenário"],
-  ["projection", "🔮", "Suposição / projeção"],
-  ["consequences", "⚡", "Possíveis consequências"],
-  ["mostLikelyScenario", "🎯", "Cenário mais provável"],
-  ["changeFactors", "⚠️", "Fatores que podem mudar a projeção"],
+  ["scenarioAnalysis", "🧠", "O que a IA acha?"],
+  ["projection", "🔮", "O que pode acontecer?"],
+  ["consequences", "⚡", "Quais podem ser as consequências?"],
+  ["mostLikelyScenario", "🎯", "Qual cenário parece mais provável?"],
+  ["changeFactors", "🔄", "O que poderia mudar tudo?"],
 ];
 
 export function AiAnalysisPage() {
@@ -85,9 +85,9 @@ export function AiAnalysisPage() {
 
   return <div className="pxm-page pxm-ai">
     <div className="pxm-page-head">
-      <span>INTELIGÊNCIA ARTIFICIAL</span>
-      <h1>Análise e suposição da IA</h1>
-      <p>Faça uma pergunta sobre política brasileira e receba um cenário estruturado em cinco partes: o que se sabe, o que pode acontecer e o que pode mudar tudo.</p>
+      <span>ANÁLISE E SUPOSIÇÃO DA AI</span>
+      <h1>Descubra o que a IA acha que pode acontecer a seguir.</h1>
+      <p>Apresente um acontecimento, decisão, declaração ou cenário político e veja como uma inteligência artificial analisa a situação, imagina possíveis desdobramentos e aponta quais consequências podem surgir. É como perguntar para um amigo extremamente inteligente: "Beleza... isso aconteceu. E agora? O que você acha que vai acontecer?"</p>
     </div>
 
     {state?.testMode && <div className="pxm-ai-demo"><Wand2 size={16}/><div><b>Modo de teste administrativo ativo</b><span>As chamadas reais à IA estão liberadas para testes sem descontar créditos da comunidade ou créditos pessoais. Desative este modo antes de abrir o recurso ao público.</span></div></div>}
@@ -100,9 +100,9 @@ export function AiAnalysisPage() {
     </div>
 
     <section className="pxm-ai-ask">
-      <label htmlFor="pxm-ai-question">Sua pergunta</label>
+      <label htmlFor="pxm-ai-question">Cenário ou acontecimento</label>
       <textarea id="pxm-ai-question" value={question} onChange={(e) => setQuestion(e.target.value)} rows={4}
-        placeholder="Ex.: como a mudança de aliança no Congresso pode afetar a disputa presidencial de 2026?" maxLength={2000}/>
+        placeholder='Ex.: o Congresso aprovou uma mudança nas regras eleitorais. Beleza... isso aconteceu. E agora? O que você acha que pode acontecer?' maxLength={2000}/>
       <div className="pxm-ai-ask-foot">
         <small>{question.length}/2000 · reserva de {state?.reservationCredits ?? "—"} créditos por análise (provisório)</small>
         <button className="pxm-primary" onClick={() => void submit()} disabled={loading || !canSubmit || question.trim().length < 10}>
@@ -134,6 +134,13 @@ export function AiAnalysisPage() {
 
     {result && <section ref={resultRef} className="pxm-ai-result pxm-ai-result-ready">
       <div className="pxm-section-head"><div><span>RESULTADO</span><h2>{result.question}</h2></div></div>
+      <div className="pxm-ai-warning">
+        <AlertTriangle size={16}/>
+        <div>
+          <b>AVISO IMPORTANTE</b>
+          <p>Esta é uma experiência de análise e projeção baseada em inteligência artificial. As respostas representam opiniões, hipóteses, inferências e possíveis cenários construídos pela IA a partir das informações disponíveis. Nem tudo apresentado deve ser interpretado como um fato ou como uma previsão certa do futuro. Novos acontecimentos podem mudar completamente um cenário. Use a ferramenta para explorar possibilidades, não como uma certeza sobre o que irá acontecer.</p>
+        </div>
+      </div>
       <div className="pxm-ai-sections">
         {SECTIONS.map(([key, icon, label]) => <article key={key} className="pxm-ai-section-card">
           <h3><i>{icon}</i> {label}</h3><p>{result.sections[key]}</p>
@@ -167,6 +174,6 @@ export function AiAnalysisPage() {
       </button>)}</div>
     </section>}
 
-    <div className="pxm-note"><AlertTriangle size={18}/><div><b>Aviso importante</b><p>As projeções são cenários gerados por inteligência artificial a partir da pergunta enviada. Não são garantias, previsões eleitorais nem recomendação de voto. Confira sempre as fontes oficiais.</p></div></div>
+    <div className="pxm-note"><AlertTriangle size={18}/><div><b>Explore, não leve como certeza</b><p>As respostas da IA são cenários e opiniões analíticas, não garantias nem previsões oficiais. Política muda rápido: novos fatos podem transformar qualquer projeção.</p></div></div>
   </div>;
 }

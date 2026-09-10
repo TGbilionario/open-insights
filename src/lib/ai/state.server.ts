@@ -35,8 +35,6 @@ type HistoryRow = {
   credits_charged: number;
   credit_source: string;
   total_tokens: number;
-  verification_sources: unknown;
-  verification_status: "not_run" | "sources_found" | "no_sources";
   scenario_analysis: string | null;
   projection: string | null;
   consequences: string | null;
@@ -56,8 +54,8 @@ export function rowToRecord(row: HistoryRow): AnalysisRecordDTO {
     creditsCharged: row.credits_charged,
     creditSource: row.credit_source,
     totalTokens: row.total_tokens,
-    verificationSources: Array.isArray(row.verification_sources) ? row.verification_sources : [],
-    verificationStatus: row.verification_status,
+    verificationSources: [],
+    verificationStatus: "not_run",
     sections: {
       scenarioAnalysis: row.scenario_analysis ?? "",
       projection: row.projection ?? "",

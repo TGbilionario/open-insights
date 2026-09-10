@@ -34,9 +34,6 @@ export type Database = {
           scenario_analysis: string | null
           status: string
           total_tokens: number
-          verification_sources: Json
-          verification_checked_at: string | null
-          verification_status: string
           user_id: string | null
           user_key: string
         }
@@ -59,9 +56,6 @@ export type Database = {
           scenario_analysis?: string | null
           status?: string
           total_tokens?: number
-          verification_sources?: Json
-          verification_checked_at?: string | null
-          verification_status?: string
           user_id?: string | null
           user_key: string
         }
@@ -84,9 +78,6 @@ export type Database = {
           scenario_analysis?: string | null
           status?: string
           total_tokens?: number
-          verification_sources?: Json
-          verification_checked_at?: string | null
-          verification_status?: string
           user_id?: string | null
           user_key?: string
         }

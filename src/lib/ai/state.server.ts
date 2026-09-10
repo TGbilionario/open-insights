@@ -8,7 +8,6 @@ import { getProviderStatus } from "./provider.server";
 export async function buildState(userKey: string): Promise<AiStateDTO> {
   const state = await getAiState(userKey);
   const status = getProviderStatus();
-  const testMode = process.env["AI_TEST_MODE"] === "true";
   return {
     communityRemaining: state.pool.credits_remaining,
     communityDailyLimit: state.pool.daily_credit_limit,
@@ -21,7 +20,7 @@ export async function buildState(userKey: string): Promise<AiStateDTO> {
     model: status.model,
     reservationCredits: CREDIT_CONFIG.reservationCredits,
     provisional: CREDIT_CONFIG.provisional,
-    testMode,
+    testMode: false,
   };
 }
 

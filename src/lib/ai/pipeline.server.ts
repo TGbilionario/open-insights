@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-import type { RunAnalysisResult } from "../ai-analysis.functions";
+import type { AnalysisRecordDTO, RunAnalysisResult } from "../ai-analysis.functions";
 import { CREDIT_CONFIG, computeCreditCost } from "./credit-config.server";
 import { refundReservation, reserveCredits, settleCredits } from "./credit-service.server";
 import { getAnalysisProvider } from "./provider.server";

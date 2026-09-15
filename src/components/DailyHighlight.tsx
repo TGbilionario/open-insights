@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, Flame, Play } from "lucide-react";
+import { ArrowRight, CalendarDays, Flame, Play, Sparkles } from "lucide-react";
 
 type DailyHighlightProps = {
   dateLabel?: string;
@@ -12,7 +12,7 @@ export function DailyHighlight({
   dateLabel = "07/09/2026",
   title = "A notícia que marcou o dia",
   summary = "O principal acontecimento político selecionado pela nossa curadoria depois do fechamento do noticiário.",
-  duration = "00:58",
+  duration = "01:30",
   onOpen,
 }: DailyHighlightProps) {
   return (
@@ -26,18 +26,18 @@ export function DailyHighlight({
       </div>
       <div className="pxm-daily-highlight-content">
         <div className="pxm-daily-highlight-art">
-          <span>SHORT ESPECIAL</span>
-          <button onClick={onOpen} aria-label="Assistir destaque do dia">
+          <span>VÍDEO ESPECIAL</span>
+          <button onClick={onOpen} aria-label="Assistir vídeo especial do destaque do dia">
             <Play size={22} fill="currentColor" />
           </button>
           <small>{duration}</small>
         </div>
         <div className="pxm-daily-highlight-copy">
-          <span className="pxm-daily-highlight-kicker">O QUE MAIS REPERCUTIU</span>
+          <span className="pxm-daily-highlight-kicker"><Sparkles size={13} /> O QUE MAIS REPERCUTIU</span>
           <h2>{title}</h2>
           <p>{summary}</p>
           <button className="pxm-daily-highlight-cta" onClick={onOpen}>
-            Assistir destaque <ArrowRight size={15} />
+            Assistir vídeo especial <ArrowRight size={15} />
           </button>
           <small className="pxm-daily-highlight-note">Fechamento editorial entre 23h30 e 00h00 · publicação às 07h00</small>
         </div>

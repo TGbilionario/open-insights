@@ -10,7 +10,7 @@ type WeeklyHighlightProps = {
 
 export function WeeklyHighlight({
   title = "O assunto que dominou a semana",
-  description = "Uma seleção especial de Shorts para entender o fato que mais repercutiu na política brasileira.",
+  description = "Uma seleção especial para entender o fato que mais repercutiu na política brasileira.",
   shorts = [
     { id: 1, title: "O que aconteceu?", duration: "00:48" },
     { id: 2, title: "Onde está o conflito?", duration: "00:55" },
@@ -25,13 +25,13 @@ export function WeeklyHighlight({
       <div className="pxm-weekly-copy">
         <div className="pxm-weekly-kicker">
           <span><Flame size={13} /> {weekLabel}</span>
-          <small><CalendarDays size={12} /> Publicado aos domingos</small>
+          <small><CalendarDays size={12} /> Especial semanal</small>
         </div>
         <h2>{title}</h2>
         <p>{description}</p>
         <div className="pxm-weekly-meta">
           <Sparkles size={14} />
-          <span>Especial editorial · 4 Shorts</span>
+          <span>VÍDEO ESPECIAL · 4 partes</span>
         </div>
       </div>
 

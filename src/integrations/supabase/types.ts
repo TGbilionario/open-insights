@@ -148,6 +148,153 @@ export type Database = {
         }
         Relationships: []
       }
+      editorial_charges: {
+        Row: {
+          characters: string
+          charge_code: string
+          charge_type: string
+          checks: Json
+          concept: string
+          created_at: string
+          facts: string
+          headline: string
+          id: string
+          master_prompt: string
+          metadata: Json
+          phrase: string
+          scenes: Json
+          sources: string
+          stage: string
+          updated_at: string
+          why_it_matters: string
+        }
+        Insert: {
+          characters?: string
+          charge_code: string
+          charge_type?: string
+          checks?: Json
+          concept?: string
+          created_at?: string
+          facts?: string
+          headline: string
+          id?: string
+          master_prompt?: string
+          metadata?: Json
+          phrase?: string
+          scenes?: Json
+          sources?: string
+          stage?: string
+          updated_at?: string
+          why_it_matters?: string
+        }
+        Update: {
+          characters?: string
+          charge_code?: string
+          charge_type?: string
+          checks?: Json
+          concept?: string
+          created_at?: string
+          facts?: string
+          headline?: string
+          id?: string
+          master_prompt?: string
+          metadata?: Json
+          phrase?: string
+          scenes?: Json
+          sources?: string
+          stage?: string
+          updated_at?: string
+          why_it_matters?: string
+        }
+        Relationships: []
+      }
+      editorial_content: {
+        Row: {
+          analysis: string
+          category: string
+          characters: string
+          charge_phrase: string
+          content_code: string
+          content_type: string
+          context: string
+          created_at: string
+          editorial_note: string
+          fact: string
+          headline: string
+          id: string
+          institutions: string
+          keywords: string
+          metadata: Json
+          parties: string
+          projection: string
+          published_at: string | null
+          relevance_score: number
+          sources: string
+          status: string
+          subcategory: string
+          subjects: string
+          title: string
+          updated_at: string
+          visual_concept: string
+        }
+        Insert: {
+          analysis?: string
+          category?: string
+          characters?: string
+          charge_phrase?: string
+          content_code: string
+          content_type?: string
+          context?: string
+          created_at?: string
+          editorial_note?: string
+          fact?: string
+          headline?: string
+          id?: string
+          institutions?: string
+          keywords?: string
+          metadata?: Json
+          parties?: string
+          projection?: string
+          published_at?: string | null
+          relevance_score?: number
+          sources?: string
+          status?: string
+          subcategory?: string
+          subjects?: string
+          title: string
+          updated_at?: string
+          visual_concept?: string
+        }
+        Update: {
+          analysis?: string
+          category?: string
+          characters?: string
+          charge_phrase?: string
+          content_code?: string
+          content_type?: string
+          context?: string
+          created_at?: string
+          editorial_note?: string
+          fact?: string
+          headline?: string
+          id?: string
+          institutions?: string
+          keywords?: string
+          metadata?: Json
+          parties?: string
+          projection?: string
+          published_at?: string | null
+          relevance_score?: number
+          sources?: string
+          status?: string
+          subcategory?: string
+          subjects?: string
+          title?: string
+          updated_at?: string
+          visual_concept?: string
+        }
+        Relationships: []
+      }
       user_ai_usage: {
         Row: {
           free_uses_used: number

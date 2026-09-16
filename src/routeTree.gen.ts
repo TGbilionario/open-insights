@@ -10,24 +10,27 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChargesRouteImport } from './routes/charges'
+import { Route as EditorialRouteImport } from './routes/editorial'
 
 const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
 const ChargesRoute = ChargesRouteImport.update({ id: '/charges', path: '/charges', getParentRoute: () => rootRouteImport } as any)
+const EditorialRoute = EditorialRouteImport.update({ id: '/editorial', path: '/editorial', getParentRoute: () => rootRouteImport } as any)
 
-export interface FileRoutesByFullPath { '/': typeof IndexRoute; '/charges': typeof ChargesRoute }
-export interface FileRoutesByTo { '/': typeof IndexRoute; '/charges': typeof ChargesRoute }
-export interface FileRoutesById { __root__: typeof rootRouteImport; '/': typeof IndexRoute; '/charges': typeof ChargesRoute }
-export interface FileRouteTypes { fileRoutesByFullPath: FileRoutesByFullPath; fullPaths: '/' | '/charges'; fileRoutesByTo: FileRoutesByTo; to: '/' | '/charges'; id: '__root__' | '/' | '/charges'; fileRoutesById: FileRoutesById }
-export interface RootRouteChildren { IndexRoute: typeof IndexRoute; ChargesRoute: typeof ChargesRoute }
+export interface FileRoutesByFullPath { '/': typeof IndexRoute; '/charges': typeof ChargesRoute; '/editorial': typeof EditorialRoute }
+export interface FileRoutesByTo { '/': typeof IndexRoute; '/charges': typeof ChargesRoute; '/editorial': typeof EditorialRoute }
+export interface FileRoutesById { __root__: typeof rootRouteImport; '/': typeof IndexRoute; '/charges': typeof ChargesRoute; '/editorial': typeof EditorialRoute }
+export interface FileRouteTypes { fileRoutesByFullPath: FileRoutesByFullPath; fullPaths: '/' | '/charges' | '/editorial'; fileRoutesByTo: FileRoutesByTo; to: '/' | '/charges' | '/editorial'; id: '__root__' | '/' | '/charges' | '/editorial'; fileRoutesById: FileRoutesById }
+export interface RootRouteChildren { IndexRoute: typeof IndexRoute; ChargesRoute: typeof ChargesRoute; EditorialRoute: typeof EditorialRoute }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': { id: '/'; path: '/'; fullPath: '/'; preLoaderRoute: typeof IndexRouteImport; parentRoute: typeof rootRouteImport }
     '/charges': { id: '/charges'; path: '/charges'; fullPath: '/charges'; preLoaderRoute: typeof ChargesRouteImport; parentRoute: typeof rootRouteImport }
+    '/editorial': { id: '/editorial'; path: '/editorial'; fullPath: '/editorial'; preLoaderRoute: typeof EditorialRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = { IndexRoute, ChargesRoute }
+const rootRouteChildren: RootRouteChildren = { IndexRoute, ChargesRoute, EditorialRoute }
 export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'

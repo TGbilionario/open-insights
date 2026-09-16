@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowLeft, ArrowRight, Bookmark, Check, ChevronRight, CirclePlay, Clock3,
-  ExternalLink, Filter, Flame, History, Home as HomeIcon, LayoutDashboard, Menu,
-  Play, Pause, Search, Settings, Share2, Sparkles, User, Volume2, VolumeX, X, Database
+  ExternalLink, Filter, Flame, History, Home as HomeIcon, LayoutDashboard, Menu, Pause,
+  Play, Search, Settings, Share2, Sparkles, User, Volume2, VolumeX, X
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { DailyHighlight } from "@/components/DailyHighlight";
@@ -11,6 +11,7 @@ import { AiAnalysisPage } from "@/components/AiAnalysisPage";
 
 export const Route = createFileRoute("/")({ component: Index });
 
+// Mock local compatível com o componente; futuramente alimentado pelo pipeline editorial.
 const weeklyShorts = [
   { id: 1, title: "O que aconteceu?", duration: "00:48" },
   { id: 2, title: "Onde está o conflito?", duration: "00:55" },
@@ -22,7 +23,7 @@ type Category =
   | "PRINCIPAIS DO DIA" | "PRESIDENTE" | "PESQUISAS" | "ELEIÇÕES" | "CONGRESSO"
   | "STF/TSE" | "CANDIDATOS" | "PARTIDOS" | "ECONOMIA E POLÍTICA" | "POLÊMICAS" | "BASTIDORES";
 type StoryType = "FATO" | "ANÁLISE" | "CONTEXTO" | "PROJEÇÃO";
-type Page = "home" | "videos" | "summary" | "dailyHighlight" | "aiAnalysis" | "saved" | "profile" | "admin" | "editorial";
+type Page = "home" | "videos" | "summary" | "dailyHighlight" | "aiAnalysis" | "saved" | "profile" | "admin";
 
 type VideoItem = {
   id: number;
@@ -117,10 +118,9 @@ function Index() {
 function Nav({page,go}:{page:Page;go:(p:Page)=>void}) {
   const items:[Page,ReactNode,string][] = [
     ["home",<HomeIcon size={18}/>,"Início"],["videos",<CirclePlay size={18}/>,"Vídeos"],
-    ["editorial",<Database size={18}/>,"Banco de Conteúdo"],
     ["summary",<Flame size={18}/>,"Resumo do dia"],["dailyHighlight",<Sparkles size={18}/>,"Destaque do dia"],["aiAnalysis",<Sparkles size={18}/>,"Análise e suposição da IA"],["saved",<Bookmark size={18}/>,"Salvos"],["profile",<User size={18}/>,"Meu perfil"]
   ];
-  return <nav className="pxm-nav">{items.map(([p,icon,label])=>p==="editorial"?<a key={p} className={"pxm-nav-item "+(page===p?"active":"")} href="/editorial" onClick={()=>go(p)}>{icon}{label}</a>:<button key={p} className={"pxm-nav-item "+(page===p?"active":"")} onClick={()=>go(p)}>{icon}{label}</button>)}</nav>;
+  return <nav className="pxm-nav">{items.map(([p,icon,label])=><button key={p} className={"pxm-nav-item "+(page===p?"active":"")} onClick={()=>go(p)}>{icon}{label}</button>)}</nav>;
 }
 
 function Home({progress,watched,open,query,results,setCategory,followedTopics,toggleTopic,topicNotice}:{progress:number;watched:number[];open:(id:number)=>void;query:string;results:VideoItem[];setCategory:(c:Category)=>void;followedTopics:string[];toggleTopic:(c:string)=>void;topicNotice:boolean}) {
@@ -149,3 +149,10 @@ function Home({progress,watched,open,query,results,setCategory,followedTopics,to
 function NewsCard({video,watched,open}:{video:VideoItem;watched:boolean;open:()=>void}) { return <article className={"pxm-news-card "+(video.featured?"featured":"")} onClick={open}><div className="pxm-card-art"><span className="pxm-category-tag">{video.category}</span><div className="pxm-art-orb"><Play size={17} fill="currentColor"/></div><span className="pxm-duration">{video.duration}</span>{watched&&<span className="pxm-seen"><Check size={11}/> VISTO</span>}</div><div className="pxm-card-body"><div className="pxm-meta">{video.time}<i/> {video.type}</div><h3>{video.title}</h3><p>{video.summary}</p></div></article>; }
 
 function Player({video,watched,saved,save,mark,back,next,prev}:{video:VideoItem;watched:boolean;saved:boolean;save:()=>void;mark:()=>void;back:()=>void;next:()=>void;prev:()=>void}) { const [muted,setMuted]=useState(true); const [playing,setPlaying]=useState(false); const [sources,setSources]=useState(false); return <div className="pxm-player-page"><div className="pxm-feed-head"><button onClick={back}><ArrowLeft size={18}/></button><div><span>EDIÇÃO DE HOJE</span><b>POLÍTICA EM X MINUTOS</b></div><strong>{video.id} / {videos.length}</strong></div><div className="pxm-stage"><button className="pxm-arrow left" onClick={prev} aria-label="Vídeo anterior"><ArrowLeft size={18}/></button><div className="pxm-video"><div className="pxm-video-grid"/><div className="pxm-video-glow"/><div className="pxm-video-top"><span>{video.category}</span><span><Clock3 size={13}/> {video.duration}</span></div><div className="pxm-video-center"><button onClick={()=>setPlaying(!playing)} aria-label={playing?"Pausar":"Reproduzir"}>{playing?<Pause size={24} fill="currentColor"/>:<Play size={24} fill="currentColor"/>}</button><small>{playing?"REPRODUZINDO":"VÍDEO DA EDIÇÃO"}</small></div><div className="pxm-video-overlay"><span className="pxm-story-type">{video.type}</span><h1>{video.title}</h1><p>{video.summary}</p><div className="pxm-video-actions"><button onClick={mark}><Check size={16}/> {watched?"Visto":"Marcar como visto"}</button><button onClick={save}><Bookmark size={16} fill={saved?"currentColor":"none"}/> {saved?"Salvo":"Salvar"}</button><button onClick={()=>setMuted(!muted)}>{muted?<VolumeX size={16}/>:<Volume2 size={16}/>}</button><button onClick={()=>navigator.share?.({title:video.title,text:video.summary})}><Share2 size={16}/></button></div></div><div className="pxm-video-progress"><i style={{width:watched?"100%":"34%"}}/></div></div><button className="pxm-arrow right" onClick={next} aria-label="Próximo vídeo"><ArrowRight size={18}/></button></div><div className="pxm-source-panel"><button className="pxm-source-toggle" onClick={()=>setSources(!sources)}><div><span>TRANSPARÊNCIA</span><b>Fontes desta informação</b></div><ChevronRight className={sources?"rotate":""} size={19}/></button>{sources&&<div className="pxm-source-body"><div><Check size={15}/><div><b>{video.source.vehicle}</b><span>{video.source.title}</span><small>{video.source.date}</small></div><a href={video.source.url} target="_blank" rel="noreferrer">Abrir <ExternalLink size={13}/></a></div><p>Este conteúdo deve distinguir fato, contexto, análise e projeção. Substitua a fonte de exemplo pela fonte original antes de publicar.</p></div>}</div></div>; }
+
+function Summary({watched}:{watched:number[]}) { return <div className="pxm-placeholder"><span>RESUMO DO DIA</span><h1>Resumo da edição</h1><p>Você assistiu {watched.length} de {videos.length} vídeos desta edição.</p></div>; }
+function DailyHighlightPage({open}:{open:(id:number)=>void}) { return <div className="pxm-placeholder"><span>DESTAQUE DO DIA</span><h1>O acontecimento central da edição</h1><p>O destaque é atualizado conforme a edição diária fica disponível.</p><button className="pxm-primary" onClick={()=>open(1)}>Abrir destaque</button></div>; }
+function Saved({ids,open}:{ids:number[];open:(id:number)=>void}) { const savedVideos=videos.filter(v=>ids.includes(v.id)); return <div className="pxm-placeholder"><span>SALVOS</span><h1>Seus conteúdos salvos</h1>{savedVideos.length?savedVideos.map(v=><button key={v.id} className="pxm-nav-item" onClick={()=>open(v.id)}>{v.title}</button>):<p>Nenhum vídeo salvo ainda.</p>}</div>; }
+function Profile({watched,saved,clear}:{watched:number[];saved:number[];clear:()=>void}) { return <div className="pxm-placeholder"><span>MEU PERFIL</span><h1>Seu progresso</h1><p>{watched.length} vídeos vistos · {saved.length} salvos.</p><button className="pxm-ghost" onClick={clear}>Limpar progresso local</button></div>; }
+function Admin() { return <div className="pxm-placeholder"><span>ADMINISTRAÇÃO</span><h1>Painel administrativo</h1><p>Use as ferramentas editoriais para preparar a edição.</p></div>; }
+function Empty({title,text}:{title:string;text:string}) { return <div className="pxm-placeholder"><h3>{title}</h3><p>{text}</p></div>; }

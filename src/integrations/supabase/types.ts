@@ -119,6 +119,7 @@ export type Database = {
       ai_sync_pool: { Args: Record<string, never>; Returns: { credits_remaining: number; daily_credit_limit: number; id: string; reset_at: string; updated_at: string }[] }
       editorial_next_batch_window: { Args: { p_today?: string }; Returns: { start_date: string; end_date: string; batch_days: number; daily_target_videos: number; timezone: string }[] }
       editorial_claim_next_batch: { Args: { p_today?: string }; Returns: { id: string; batch_code: string; start_date: string; end_date: string; status: string; target_days: number; target_videos_per_day: number; target_videos: number; produced_videos: number; started_at: string | null; completed_at: string | null; error_message: string | null; created_at: string; updated_at: string } }
+      editorial_claim_due_batch: { Args: { p_today?: string }; Returns: Json[] }
 
     }
     Enums: { [_ in never]: never }

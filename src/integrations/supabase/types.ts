@@ -67,6 +67,7 @@ export type Database = {
           keywords: string[] | null; main_fact: string | null; context: string | null; analysis: string | null;
           projection: string | null; charge_phrase: string | null; sources: Json | null; script: string | null;
           visual_direction: string | null; verified_at: string | null; created_at: string; updated_at: string;
+          publication_at: string | null; publication_slot: number | null; content_type: string | null; production_batch_id: string | null; production_date: string | null;
         }
         Insert: {
           id?: string; source_id: string; source_name?: string; source_url: string; published_at?: string | null;
@@ -78,8 +79,21 @@ export type Database = {
           keywords?: string[] | null; main_fact?: string | null; context?: string | null; analysis?: string | null;
           projection?: string | null; charge_phrase?: string | null; sources?: Json | null; script?: string | null;
           visual_direction?: string | null; verified_at?: string | null; created_at?: string; updated_at?: string;
+          publication_at?: string | null; publication_slot?: number | null; content_type?: string | null; production_batch_id?: string | null; production_date?: string | null;
         }
         Update: Partial<Database['public']['Tables']['editorial_content']['Insert']>
+        Relationships: []
+      }
+      editorial_automation_settings: {
+        Row: { id: string; batch_days: number; daily_target_videos: number; timezone: string; first_production_date: string | null; updated_at: string }
+        Insert: { id?: string; batch_days?: number; daily_target_videos?: number; timezone?: string; first_production_date?: string | null; updated_at?: string }
+        Update: Partial<Database['public']['Tables']['editorial_automation_settings']['Insert']>
+        Relationships: []
+      }
+      editorial_production_batches: {
+        Row: { id: string; batch_code: string; start_date: string; end_date: string; status: string; target_days: number; target_videos_per_day: number; target_videos: number; produced_videos: number; started_at: string | null; completed_at: string | null; error_message: string | null; created_at: string; updated_at: string }
+        Insert: { id?: string; batch_code: string; start_date: string; end_date: string; status?: string; target_days?: number; target_videos_per_day?: number; target_videos?: number; produced_videos?: number; started_at?: string | null; completed_at?: string | null; error_message?: string | null; created_at?: string; updated_at?: string }
+        Update: Partial<Database['public']['Tables']['editorial_production_batches']['Insert']>
         Relationships: []
       }
       editorial_assets: {
@@ -103,6 +117,9 @@ export type Database = {
       ai_reserve_credits: { Args: { p_amount: number; p_free_limit: number; p_user_id: string; p_user_key: string }; Returns: Json }
       ai_settle_credits: { Args: { p_analysis_id: string; p_charged: number; p_reserved: number; p_source: string; p_user_id: string; p_user_key: string }; Returns: Json }
       ai_sync_pool: { Args: Record<string, never>; Returns: { credits_remaining: number; daily_credit_limit: number; id: string; reset_at: string; updated_at: string }[] }
+      editorial_next_batch_window: { Args: { p_today?: string }; Returns: { start_date: string; end_date: string; batch_days: number; daily_target_videos: number; timezone: string }[] }
+      editorial_claim_next_batch: { Args: { p_today?: string }; Returns: { id: string; batch_code: string; start_date: string; end_date: string; status: string; target_days: number; target_videos_per_day: number; target_videos: number; produced_videos: number; started_at: string | null; completed_at: string | null; error_message: string | null; created_at: string; updated_at: string } }
+
     }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }

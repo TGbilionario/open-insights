@@ -1,11 +1,6 @@
 name: Sync Make scenario
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/sync-make-scenario.yml'
   workflow_dispatch:
     inputs:
       mode:
@@ -87,7 +82,7 @@ jobs:
           fi
 
       - name: Validate Blueprint exists
-        if: ${{ inputs.mode == 'apply' || github.event_name == 'push' }}
+        if: ${{ inputs.mode == 'apply' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -104,7 +99,7 @@ jobs:
           PY
 
       - name: Verify scenario is inactive before applying
-        if: ${{ inputs.mode == 'apply' || github.event_name == 'push' }}
+        if: ${{ inputs.mode == 'apply' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -126,7 +121,7 @@ jobs:
           PY
 
       - name: Pull live Make Blueprint and sanitize it
-        if: ${{ inputs.mode == 'apply' || github.event_name == 'push' }}
+        if: ${{ inputs.mode == 'apply' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -162,7 +157,7 @@ jobs:
           PY
 
       - name: Apply live sanitized Blueprint to Make
-        if: ${{ inputs.mode == 'apply' || github.event_name == 'push' }}
+        if: ${{ inputs.mode == 'apply' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -185,7 +180,7 @@ jobs:
           PY
 
       - name: Confirm scenario remains inactive
-        if: ${{ inputs.mode == 'apply' || github.event_name == 'push' }}
+        if: ${{ inputs.mode == 'apply' }}
         shell: bash
         run: |
           set -euo pipefail

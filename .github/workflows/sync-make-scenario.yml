@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "pull = copy the current Make Blueprint into GitHub; apply = send the GitHub Blueprint to Make"
+        description: "pull = Make -> GitHub; apply = GitHub -> Make"
         required: true
         default: "pull"
         type: choice
@@ -16,9 +16,6 @@ on:
         required: true
         default: "7422230"
         type: string
-  push:
-    paths:
-      - "make/blueprints/*.json"
 
 permissions:
   contents: write
@@ -28,7 +25,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MAKE_API_BASE: https://eu1.make.com/api/v2
-      MAKE_TEAM_ID: "2518622"
       MAKE_API_TOKEN: ${{ secrets.MAKE_API_TOKEN }}
       SCENARIO_ID: ${{ inputs.scenario_id || '7422230' }}
 
@@ -43,11 +39,10 @@ jobs:
           test -n "${MAKE_API_TOKEN}" || { echo "MAKE_API_TOKEN secret is missing."; exit 1; }
 
       - name: Pull current Make Blueprint
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'pull' }}
+        if: ${{ inputs.mode == 'pull' }}
         shell: bash
         run: |
           set -euo pipefail
-
           mkdir -p make/blueprints
 
           curl --fail-with-body --silent --show-error \
@@ -61,38 +56,50 @@ jobs:
 
           scenario_id = os.environ["SCENARIO_ID"]
           raw = json.loads(pathlib.Path("/tmp/blueprint-response.json").read_text())
-
-          # Make returns the blueprint payload under "blueprint" in the API response.
-          blueprint = raw.get("blueprint", raw)
+          response = raw.get("response", raw)
+          blueprint = response.get("blueprint", response)
 
           if isinstance(blueprint, str):
               blueprint = json.loads(blueprint)
 
+          if not isinstance(blueprint, dict) or "flow" not in blueprint:
+              raise SystemExit("Make response did not contain a valid blueprint with a flow.")
+
           out = pathlib.Path(f"make/blueprints/scenario-{scenario_id}.json")
           out.write_text(json.dumps(blueprint, ensure_ascii=False, indent=2) + "\n")
-          print(f"Saved {out}")
+          print(f"Saved normalized Blueprint: {out}")
           PY
-
-      - name: Commit pulled Blueprint
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'pull' }}
-        shell: bash
-        run: |
-          set -euo pipefail
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "make/blueprints/scenario-${SCENARIO_ID}.json"
 
-          git add make/blueprints/
           if git diff --cached --quiet; then
             echo "Blueprint is already up to date."
-            exit 0
+          else
+            git commit -m "chore: sync Make scenario blueprint"
+            git push
           fi
 
-          git commit -m "chore: sync Make scenario blueprint"
-          git push
+      - name: Validate Blueprint exists
+        if: ${{ inputs.mode == 'apply' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BLUEPRINT_FILE="make/blueprints/scenario-${SCENARIO_ID}.json"
+          test -f "${BLUEPRINT_FILE}" || { echo "Missing ${BLUEPRINT_FILE}"; exit 1; }
+
+          python - <<'PY'
+          import json, os, pathlib
+          p = pathlib.Path(f"make/blueprints/scenario-{os.environ['SCENARIO_ID']}.json")
+          data = json.loads(p.read_text())
+          if not isinstance(data, dict) or "flow" not in data:
+              raise SystemExit("Blueprint file is not normalized.")
+          print(f"Valid Blueprint: {p}")
+          PY
 
       - name: Verify scenario is inactive before applying
-        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.mode == 'apply') || github.event_name == 'push' }}
+        if: ${{ inputs.mode == 'apply' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -104,24 +111,20 @@ jobs:
             -o /tmp/scenario.json
 
           python - <<'PY'
-          import json, pathlib, os, sys
+          import json, pathlib
           data = json.loads(pathlib.Path("/tmp/scenario.json").read_text())
           scenario = data.get("scenario", data)
           print("Scenario:", scenario.get("name"))
           print("Active:", scenario.get("isActive"))
           if scenario.get("isActive"):
-              print("Refusing to apply Blueprint while the scenario is active.")
-              sys.exit(1)
+              raise SystemExit("Refusing to apply while the Make scenario is active.")
           PY
 
       - name: Apply GitHub Blueprint to Make
-        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.mode == 'apply') || github.event_name == 'push' }}
+        if: ${{ inputs.mode == 'apply' }}
         shell: bash
         run: |
           set -euo pipefail
-
-          BLUEPRINT_FILE="make/blueprints/scenario-${SCENARIO_ID}.json"
-          test -f "${BLUEPRINT_FILE}" || { echo "Missing ${BLUEPRINT_FILE}"; exit 1; }
 
           python - <<'PY'
           import json, os, pathlib, urllib.request
@@ -130,9 +133,12 @@ jobs:
           base = os.environ["MAKE_API_BASE"]
           scenario_id = os.environ["SCENARIO_ID"]
           blueprint_file = pathlib.Path(f"make/blueprints/scenario-{scenario_id}.json")
-
           blueprint = json.loads(blueprint_file.read_text())
-          payload = json.dumps({"blueprint": json.dumps(blueprint, ensure_ascii=False, separators=(",", ":"))}).encode()
+
+          payload = json.dumps(
+              {"blueprint": json.dumps(blueprint, ensure_ascii=False, separators=(",", ":"))},
+              ensure_ascii=False,
+          ).encode()
 
           req = urllib.request.Request(
               f"{base}/scenarios/{scenario_id}",
@@ -146,12 +152,11 @@ jobs:
           )
 
           with urllib.request.urlopen(req) as response:
-              body = response.read().decode()
-              print(body)
+              print(response.read().decode())
           PY
 
-      - name: Confirm applied scenario is still inactive
-        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.mode == 'apply') || github.event_name == 'push' }}
+      - name: Confirm scenario remains inactive
+        if: ${{ inputs.mode == 'apply' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -163,12 +168,11 @@ jobs:
             -o /tmp/scenario-after.json
 
           python - <<'PY'
-          import json, pathlib, sys
+          import json, pathlib
           data = json.loads(pathlib.Path("/tmp/scenario-after.json").read_text())
           scenario = data.get("scenario", data)
-          print("Make scenario:", scenario.get("name"))
-          print("Active after sync:", scenario.get("isActive"))
+          print("Scenario:", scenario.get("name"))
+          print("Active after apply:", scenario.get("isActive"))
           if scenario.get("isActive"):
-              print("Safety check failed: scenario became active unexpectedly.")
-              sys.exit(1)
+              raise SystemExit("Safety check failed: scenario became active unexpectedly.")
           PY

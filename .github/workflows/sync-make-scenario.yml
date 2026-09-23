@@ -120,39 +120,63 @@ jobs:
               raise SystemExit("Refusing to apply while the Make scenario is active.")
           PY
 
-      - name: Apply GitHub Blueprint to Make
+      - name: Pull live Make Blueprint and sanitize it
+        if: ${{ inputs.mode == 'apply' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl --fail-with-body --silent --show-error -H "Authorization: Token ${MAKE_API_TOKEN}" -H "Accept: application/json" "${MAKE_API_BASE}/scenarios/${SCENARIO_ID}/blueprint" -o /tmp/live-blueprint-response.json
+
+          python - <<'PY'
+          import json, pathlib
+
+          raw = json.loads(pathlib.Path("/tmp/live-blueprint-response.json").read_text())
+          response = raw.get("response", raw)
+          blueprint = response.get("blueprint", response)
+          if isinstance(blueprint, str):
+              blueprint = json.loads(blueprint)
+          if not isinstance(blueprint, dict) or "flow" not in blueprint:
+              raise SystemExit("Live Make response did not contain a valid blueprint with a flow.")
+
+          removed = 0
+          def sanitize(value):
+              global removed
+              if isinstance(value, dict):
+                  if "role" in value and "content" in value and "contentType" in value:
+                      value.pop("contentType", None)
+                      removed += 1
+                  for child in value.values():
+                      sanitize(child)
+              elif isinstance(value, list):
+                  for child in value:
+                      sanitize(child)
+          sanitize(blueprint)
+          pathlib.Path("/tmp/live-blueprint.json").write_text(json.dumps(blueprint, ensure_ascii=False, separators=(",", ":")))
+          print(f"Live Blueprint loaded and sanitized; removed {removed} invalid message contentType fields.")
+          PY
+
+      - name: Apply live sanitized Blueprint to Make
         if: ${{ inputs.mode == 'apply' }}
         shell: bash
         run: |
           set -euo pipefail
 
           python - <<'PY'
-          import json, os, pathlib, urllib.request
-
+          import json, os, pathlib, urllib.request, urllib.error
           token = os.environ["MAKE_API_TOKEN"]
           base = os.environ["MAKE_API_BASE"]
           scenario_id = os.environ["SCENARIO_ID"]
-          blueprint_file = pathlib.Path(f"make/blueprints/scenario-{scenario_id}.json")
-          blueprint = json.loads(blueprint_file.read_text())
-
-          payload = json.dumps(
-              {"blueprint": json.dumps(blueprint, ensure_ascii=False, separators=(",", ":"))},
-              ensure_ascii=False,
-          ).encode()
-
-          req = urllib.request.Request(
-              f"{base}/scenarios/{scenario_id}?confirmed=true",
-              data=payload,
-              method="PATCH",
-              headers={
-                  "Authorization": f"Token {token}",
-                  "Accept": "application/json",
-                  "Content-Type": "application/json",
-              },
-          )
-
-          with urllib.request.urlopen(req) as response:
-              print(response.read().decode())
+          blueprint = json.loads(pathlib.Path("/tmp/live-blueprint.json").read_text())
+          payload = json.dumps({"blueprint": json.dumps(blueprint, ensure_ascii=False, separators=(",", ":"))}, ensure_ascii=False).encode()
+          req = urllib.request.Request(f"{base}/scenarios/{scenario_id}?confirmed=true", data=payload, method="PATCH", headers={"Authorization": f"Token {token}", "Accept": "application/json", "Content-Type": "application/json"})
+          try:
+              with urllib.request.urlopen(req) as response:
+                  print(response.read().decode())
+          except urllib.error.HTTPError as exc:
+              print(f"Make API returned HTTP {exc.code}:")
+              print(exc.read().decode("utf-8", errors="replace"))
+              raise
           PY
 
       - name: Confirm scenario remains inactive

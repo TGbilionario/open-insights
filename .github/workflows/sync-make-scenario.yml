@@ -1,6 +1,11 @@
 name: Sync Make scenario
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sync-make-scenario.yml'
   workflow_dispatch:
     inputs:
       mode:

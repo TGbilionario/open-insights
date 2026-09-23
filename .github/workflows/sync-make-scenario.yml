@@ -1,6 +1,9 @@
 name: Sync Make scenario
 
 on:
+  push:
+    paths:
+      - 'make/bridge-trigger.txt'
   workflow_dispatch:
     inputs:
       mode:

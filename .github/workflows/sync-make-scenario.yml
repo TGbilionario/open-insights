@@ -141,7 +141,7 @@ jobs:
           ).encode()
 
           req = urllib.request.Request(
-              f"{base}/scenarios/{scenario_id}",
+              f"{base}/scenarios/{scenario_id}?confirmed=true",
               data=payload,
               method="PATCH",
               headers={
